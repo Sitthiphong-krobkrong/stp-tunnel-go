@@ -1,0 +1,10 @@
+# build output
+stp-tunnel
+sshtunnelapp
+STPTunnel.app/
+fyne-cross/
+dist/
+*.exe
+*.zip
+
+.DS_Store

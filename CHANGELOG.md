@@ -1,0 +1,50 @@
+# Changelog
+
+ทุกการเปลี่ยนแปลงที่ส่งผลกับผู้ใช้จะบันทึกไว้ที่นี่ รูปแบบอ้างอิงจาก [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) เลขเวอร์ชันอ้างอิง [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`)
+
+อัปเดตไฟล์นี้พร้อมกับตอนที่ bump `VERSION` ใน [build.sh](build.sh) ทุกครั้งที่แจกรอบใหม่ — ดูหัวข้อ "Build สำหรับแจกจ่าย" ใน [README.md](README.md)
+
+## สรุป release
+
+เพิ่มแถวใหม่ไว้บนสุดทุกครั้งที่ bump version — รายละเอียดเต็มของแต่ละเวอร์ชันอยู่ด้านล่าง
+
+| Version | วันที่ | สรุป |
+|---|---|---|
+| 1.0.0 | 2026-09-17 | เวอร์ชันแรก — tunnel manager ครบชุด, system tray menu, คอลัมน์ Latency, ไอคอนแอปใหม่ |
+
+## [Unreleased]
+
+### Added
+
+- ถามยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ ("N tunnel(s) are still running. Quitting will stop them all.") — ปิดแอปทันทีเหมือนเดิมถ้าไม่มี tunnel ไหนรันอยู่
+- [GUIDE-macOS.md](GUIDE-macOS.md) / [GUIDE-Windows.md](GUIDE-Windows.md) — คู่มือย่อสำหรับผู้ใช้ปลายทาง แยกไฟล์ตาม OS ไม่ปนกัน `build.sh all` ก็อปไฟล์ที่ตรง OS ใส่เป็น `GUIDE.md` ใน `dist/mac/` และ `dist/win/` ให้อัตโนมัติ แจกทีมได้โดยไม่ต้องทำอะไรเพิ่ม
+
+### Fixed
+
+- แก้ tunnel ที่ RUNNING อยู่แล้วกด Edit เปลี่ยน Local port/Target host/Target port — เดิมค่าใหม่ขึ้นในตารางทันทีแต่ตัวท่อจริงยังวิ่งด้วยค่าเก่าเงียบๆ ไม่มีใครรู้ ตอนนี้เตือนให้ Stop/Start ใหม่ถ้าเปลี่ยนค่าพวกนี้ระหว่างที่ tunnel รันอยู่
+- แก้ race condition ใน `TunnelRuntime`: ถ้า Stop แล้ว Start tunnel เดิมเร็วมากๆ ติดกัน goroutine ที่เฝ้า session เก่าอาจไปลบ/รายงานว่า session **ใหม่** หลุดแทน ทำให้ tunnel ใหม่ที่ยังรันอยู่จริงถูกมองว่าเป็น orphan (Stop ไม่ได้, Start ใหม่ชน "address already in use")
+- แก้ binary ที่ build ด้วย `go build` เฉยๆ (ลืม `-ldflags`) เคยรายงานตัวเองว่า `1.0.0` เหมือน release จริงแบ่งแยกไม่ออก — ตอนนี้ fallback เป็น `dev` แทน
+- เพิ่ม log ตอนหา home directory ไม่เจอแล้วต้องปิด host-key verification ให้ (เดิมปิดเงียบๆ ไม่ขึ้นใน LOG panel เลย)
+- ลบ `fileExists` ที่ไม่ได้ใช้ที่ไหนแล้ว (dead code)
+
+### Known issues
+
+- **System tray icon ไม่โชว์บน macOS** — `fyne.io/systray` เวอร์ชันที่ Fyne v2.8.1 บังคับใช้มีบั๊ก: status item ลงทะเบียนกับ Control Center สำเร็จ แต่ไอคอนไม่ถูก apply เลยมองไม่เห็น (upstream: [fyne-io/fyne#4548](https://github.com/fyne-io/fyne/issues/4548)) เมนู tray (Show/Stop all/Quit) ยังอยู่ในโค้ดเผื่อแก้ได้ในอนาคต แต่**ปิดพฤติกรรม "กด X แล้วซ่อนลง tray" ไว้ก่อน** — ถ้าเปิดทั้งที่ไอคอนมองไม่เห็น ผู้ใช้จะกด X แล้วแอปหายไปเลย เรียกกลับไม่ได้นอกจาก Force Quit ตอนนี้กด X = quit ปกติเหมือนเดิม
+
+## [1.0.0] - 2026-09-17
+
+### Added
+
+- จัดการหลาย project (bastion server) แต่ละ project เปิดได้หลาย tunnel (`-L` port-forward) พร้อมกัน
+- Auth ด้วย password (เก็บใน OS keychain) หรือ identity file (`~/.ssh/...`)
+- ตรวจ host key กับ `~/.ssh/known_hosts` พร้อม retry อัตโนมัติเมื่อชนิด key ไม่ตรง
+- Import/Export setup เป็นไฟล์ JSON เดียว แชร์ให้ทีมได้โดยไม่มี password ติดไปด้วย
+- **System tray menu** — Show / Stop all tunnels / Quit (ไอคอนบน macOS ยังมีปัญหา ดู "Known issues" ด้านบน)
+- **คอลัมน์ Latency** — heartbeat วัด round-trip ไปที่ bastion ทุก 5 วินาทีต่อ tunnel ที่ RUNNING โดยไม่แตะ target จริง
+- ไอคอนแอปใหม่ generate ด้วย Go ล้วน ([tools/genicon](tools/genicon)) แทนไอคอนสีฟ้าแบนๆ เดิม
+- Help → Copy diagnostics และ Check for updates
+
+### Fixed
+
+- `build.sh`: `fyne-cross` ใส่ `-ldflags "-X ..."` ไม่ได้ (บั๊กใน fyne-cross เอง ตัด string ตาม whitespace แล้วพัง) — เปลี่ยนไป stamp version ผ่านการแก้ default ใน `release.go` ชั่วคราวระหว่าง build แทน
+- `build.sh`: จุด fallback ตอน mac `--release` build ล้มเหลว (ไม่มี code-signing certificate) เคยลืมใส่ `-app-version` ทำให้ `.app` ได้เลขเวอร์ชัน `1.0.0` ของ fyne เองเสมอ ไม่ว่าจะตั้ง `VERSION` เป็นอะไรก็ตาม
