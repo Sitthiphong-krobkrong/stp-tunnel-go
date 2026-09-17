@@ -1,0 +1,155 @@
+<svg width="1040" height="620" viewBox="0 0 1040 620" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans Thai', Helvetica, Arial, sans-serif">
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowDashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563EB"/>
+    </marker>
+
+    <symbol id="icon-gear" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-database" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="6" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="icon-server" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="3" y="14" width="18" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="7" cy="7" r="0.9" fill="currentColor"/>
+      <circle cx="7" cy="17" r="0.9" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="12" cy="16" r="1.3" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-browser" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <line x1="3" y1="8.5" x2="21" y2="8.5" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="6" cy="6.3" r="0.6" fill="currentColor"/>
+      <circle cx="8" cy="6.3" r="0.6" fill="currentColor"/>
+    </symbol>
+  </defs>
+
+  <rect x="0" y="0" width="1040" height="620" fill="#FFFFFF"/>
+
+  <!-- header -->
+  <text x="40" y="34" font-size="11" font-weight="600" letter-spacing="1.5" fill="#64748B">GO + FYNE DESKTOP APP &#183; COMPONENT OVERVIEW</text>
+  <text x="40" y="60" font-size="22" font-weight="700" fill="#0F172A">STP Tunnel &#8212; โครงสร้างโค้ด</text>
+
+  <!-- ============ main.go hub ============ -->
+  <rect x="410" y="90" width="220" height="86" rx="12" fill="#1E40AF" filter="url(#softShadow)"/>
+  <use href="#icon-gear" x="426" y="104" width="22" height="22" color="#FFFFFF"/>
+  <text x="456" y="121" font-size="15" font-weight="600" fill="#FFFFFF">main.go</text>
+  <text x="426" y="142" font-size="11.5" fill="#DBEAFE">entry point +</text>
+  <text x="426" y="158" font-size="11.5" fill="#DBEAFE">UI orchestration (App)</text>
+
+  <!-- menu.go + tray.go (UI extension tier) -->
+  <rect x="70" y="98" width="180" height="70" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+  <use href="#icon-browser" x="84" y="110" width="18" height="18" color="#2563EB"/>
+  <text x="110" y="125" font-size="13" font-weight="600" fill="#0F172A" font-family="'DejaVu Sans Mono', monospace">menu.go</text>
+  <text x="84" y="145" font-size="11" fill="#64748B">Main menu bar</text>
+  <text x="84" y="159" font-size="11" fill="#64748B">Import/Export, Check updates</text>
+
+  <rect x="790" y="98" width="180" height="70" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+  <use href="#icon-server" x="804" y="110" width="18" height="18" color="#2563EB"/>
+  <text x="830" y="125" font-size="13" font-weight="600" fill="#0F172A" font-family="'DejaVu Sans Mono', monospace">tray.go</text>
+  <text x="804" y="145" font-size="11" fill="#64748B">System tray menu</text>
+  <text x="804" y="159" font-size="11" fill="#64748B">Show / Stop all / Quit</text>
+
+  <!-- arrows main.go <-> menu/tray -->
+  <line x1="410" y1="128" x2="250" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <rect x="262" y="112" width="138" height="18" rx="9" fill="#FFFFFF"/>
+  <text x="331" y="125" font-size="10.5" fill="#64748B" text-anchor="middle" font-family="'DejaVu Sans Mono', monospace">buildMainMenu()</text>
+
+  <line x1="630" y1="128" x2="790" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <rect x="640" y="112" width="140" height="18" rx="9" fill="#FFFFFF"/>
+  <text x="710" y="125" font-size="10.5" fill="#64748B" text-anchor="middle" font-family="'DejaVu Sans Mono', monospace">setupSystemTray()</text>
+
+  <!-- ============ pure-logic group ============ -->
+  <rect x="70" y="250" width="900" height="290" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- model.go -->
+  <rect x="104" y="308" width="248" height="200" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5" filter="url(#softShadow)"/>
+  <use href="#icon-database" x="122" y="326" width="22" height="22" color="#2563EB"/>
+  <text x="154" y="343" font-size="14" font-weight="600" fill="#0F172A" font-family="'DejaVu Sans Mono', monospace">model.go</text>
+  <line x1="122" y1="356" x2="328" y2="356" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="122" y="378" font-size="12" fill="#0F172A">state ที่บันทึกถาวร</text>
+  <text x="122" y="396" font-size="11" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">Store · Project</text>
+  <text x="122" y="411" font-size="11" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">TunnelConfig</text>
+  <text x="122" y="432" font-size="11" fill="#64748B">โหลด/เซฟเป็นไฟล์ JSON</text>
+  <text x="122" y="447" font-size="10.5" fill="#94A3B8" font-family="'DejaVu Sans Mono', monospace">~/Library/.../config.json</text>
+  <text x="122" y="470" font-size="11" fill="#64748B">Merge() สำหรับ Import/Export</text>
+  <text x="122" y="488" font-size="11" fill="#64748B">setup ระหว่างทีม</text>
+
+  <!-- tunnel.go (emphasized) -->
+  <rect x="396" y="300" width="280" height="216" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="2" filter="url(#softShadow)"/>
+  <use href="#icon-server" x="414" y="318" width="22" height="22" color="#2563EB"/>
+  <text x="446" y="335" font-size="14" font-weight="600" fill="#0F172A" font-family="'DejaVu Sans Mono', monospace">tunnel.go</text>
+  <rect x="586" y="316" width="76" height="18" rx="9" fill="#FEF3C7"/>
+  <circle cx="598" cy="325" r="3" fill="#D97706"/>
+  <text x="606" y="329" font-size="9.5" font-weight="600" fill="#D97706">GOROUTINE</text>
+  <line x1="414" y1="348" x2="662" y2="348" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="414" y="370" font-size="12" fill="#0F172A">รัน SSH จริง (ไม่ shell out)</text>
+  <text x="414" y="388" font-size="11" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">TunnelRuntime · liveTunnel</text>
+  <text x="414" y="403" font-size="10.5" fill="#94A3B8">golang.org/x/crypto/ssh</text>
+  <text x="414" y="425" font-size="11" fill="#0F172A">Start() ต่อยอด 3 goroutine:</text>
+  <text x="424" y="440" font-size="10.5" fill="#64748B">&#8226; acceptLoop &#8212; proxy traffic</text>
+  <text x="424" y="454" font-size="10.5" fill="#64748B">&#8226; pingLoop &#8212; latency ทุก 5 วิ</text>
+  <text x="424" y="468" font-size="10.5" fill="#64748B">&#8226; client.Wait() &#8212; จับ session หลุด</text>
+  <text x="414" y="490" font-size="11" fill="#0F172A">Stop() / StopAll() ปิด listener</text>
+  <text x="414" y="504" font-size="11" fill="#0F172A">+ ssh.Client</text>
+
+  <!-- keyring.go -->
+  <rect x="732" y="308" width="212" height="200" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5" filter="url(#softShadow)"/>
+  <use href="#icon-lock" x="750" y="326" width="22" height="22" color="#2563EB"/>
+  <text x="782" y="343" font-size="14" font-weight="600" fill="#0F172A" font-family="'DejaVu Sans Mono', monospace">keyring.go</text>
+  <line x1="750" y1="356" x2="924" y2="356" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="750" y="378" font-size="12" fill="#0F172A">เก็บรหัสผ่านลง</text>
+  <text x="750" y="394" font-size="12" fill="#0F172A">OS Keychain</text>
+  <text x="750" y="416" font-size="10.5" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">savePassword()</text>
+  <text x="750" y="431" font-size="10.5" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">loadPassword()</text>
+  <text x="750" y="446" font-size="10.5" fill="#64748B" font-family="'DejaVu Sans Mono', monospace">forgetPassword()</text>
+  <text x="750" y="468" font-size="10.5" fill="#94A3B8">ไม่เก็บใน config.json</text>
+  <text x="750" y="483" font-size="10.5" fill="#94A3B8">เข้ารหัสโดย OS, ผูกกับ user</text>
+
+  <!-- solid arrows: main.go down to each module -->
+  <path d="M470,176 C 400,220 300,255 228,308" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <path d="M520,176 L536,300" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <path d="M570,176 C 660,220 770,255 838,308" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <rect x="238" y="212" width="150" height="18" rx="9" fill="#FFFFFF"/>
+  <text x="313" y="225" font-size="10.5" fill="#64748B" text-anchor="middle">LoadStore / Save</text>
+
+  <rect x="450" y="220" width="150" height="18" rx="9" fill="#FFFFFF"/>
+  <text x="525" y="233" font-size="10.5" fill="#64748B" text-anchor="middle">Start / Stop / StopAll</text>
+
+  <rect x="660" y="212" width="180" height="18" rx="9" fill="#FFFFFF"/>
+  <text x="750" y="225" font-size="10.5" fill="#64748B" text-anchor="middle">save/load/forgetPassword</text>
+
+  <!-- dashed callback arrow: tunnel.go -> main.go -->
+  <path d="M405,300 C 300,302 180,296 80,290 C 20,260 60,200 408,176" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arrowDashed)"/>
+  <rect x="58" y="188" width="175" height="34" rx="8" fill="#DBEAFE"/>
+  <text x="145" y="201" font-size="10.5" fill="#1E40AF" text-anchor="middle" font-weight="600">callback (background goroutine)</text>
+  <text x="145" y="215" font-size="10" fill="#1E40AF" text-anchor="middle" font-family="'DejaVu Sans Mono', monospace">onTunnelExit / onTunnelLog</text>
+
+  <!-- group label, drawn last with a halo so the arrows above pass behind it -->
+  <rect x="86" y="264" width="800" height="22" fill="#F8FAFC"/>
+  <text x="94" y="280" font-size="12" font-weight="600" letter-spacing="0.5" fill="#64748B">PURE LOGIC LAYER &#8212; ไม่รู้จัก UI เลย สื่อสารกับ main.go ผ่าน struct / callback เท่านั้น (one-way dependency)</text>
+
+  <!-- legend -->
+  <line x1="70" y1="570" x2="110" y2="570" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="120" y="574" font-size="11.5" fill="#64748B">เรียกฟังก์ชันตรงๆ (synchronous)</text>
+
+  <line x1="380" y1="570" x2="420" y2="570" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arrowDashed)"/>
+  <text x="430" y="574" font-size="11.5" fill="#64748B">callback จาก goroutine แยก &#8212; ต้องผ่าน</text>
+  <text x="430" y="590" font-size="11.5" fill="#64748B"><tspan font-family="'DejaVu Sans Mono', monospace">fyne.Do()</tspan><tspan> เพื่อกลับ UI thread ก่อนแตะ widget</tspan></text>
+
+</svg>

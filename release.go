@@ -26,17 +26,19 @@ var (
 const copyright = "\u00a9 2026 stp"
 
 // updateFeedURL points at a small JSON file describing the latest release —
-// latest.json at the repo root, read straight off the main branch via
-// raw.githubusercontent.com. Leave it empty to turn the update check off
-// entirely instead of failing.
+// a public GitHub Gist, since the STPTunnelGo repo itself is private and
+// raw.githubusercontent.com can't serve files out of a private repo without
+// embedding a token in the app (which anyone could then extract and reuse).
+// Leave it empty to turn the update check off entirely instead of failing.
 //
 // Expected contents:
 //
 //	{"version": "1.0.1", "url": "https://.../releases", "notes": "what changed"}
 //
-// Bump the version (and notes) in latest.json — and push it to main — as
-// part of every release; see "Build สำหรับแจกจ่าย" in README.md.
-const updateFeedURL = "https://raw.githubusercontent.com/Sitthiphong-krobkrong/STPTunnelGo/main/latest.json"
+// latest.json at the repo root is the edit copy — bump it, then sync it to
+// the gist (this URL doesn't change, it always serves the gist's newest
+// revision) as part of every release; see "Build สำหรับแจกจ่าย" in README.md.
+const updateFeedURL = "https://gist.githubusercontent.com/Sitthiphong-krobkrong/4a70a4fb82706c462054048e942096b1/raw/latest.json"
 
 type releaseInfo struct {
 	Version string `json:"version"`

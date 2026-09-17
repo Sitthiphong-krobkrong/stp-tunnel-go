@@ -267,15 +267,24 @@ go install github.com/fyne-io/fyne-cross@latest
 
 ### แจ้งเตือนเวอร์ชันใหม่
 
-`updateFeedURL` ใน [release.go](release.go) ชี้ไปที่ [latest.json](latest.json) ในนี้อยู่แล้ว (อ่านตรงจาก `main` ผ่าน raw.githubusercontent.com) — ไม่ต้องตั้งค่าอะไรเพิ่ม แค่อัปเดตไฟล์นั้นทุกรอบที่แจก:
+`updateFeedURL` ใน [release.go](release.go) ชี้ไปที่ **public GitHub Gist** — ไม่ใช่ไฟล์ในนี้โดยตรง เพราะ repo `STPTunnelGo` เป็น private และ raw.githubusercontent.com เสิร์ฟไฟล์จาก private repo ให้แอปที่ไม่มี token ไม่ได้ (ฝัง token ลงแอปที่แจกออกไปก็ไม่ปลอดภัย ใครแกะแอปก็เอาไปใช้ต่อได้)
+
+[latest.json](latest.json) ในนี้คือ**ไฟล์ต้นฉบับที่แก้** ทุกรอบที่แจกรุ่นใหม่:
 
 ```json
 {"version": "1.0.1", "url": "https://.../releases", "notes": "แก้ปัญหา host key"}
 ```
 
-แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
+แก้เสร็จแล้ว sync ขึ้น gist ด้วยคำสั่งนี้ (URL ที่แอปเรียกจะไม่เปลี่ยน เพราะ URL แบบไม่มี revision hash จะพาไปหา revision ล่าสุดเสมอ):
 
-`url` ในไฟล์ตอนนี้ชี้ไปหน้า [GitHub Releases](https://github.com/Sitthiphong-krobkrong/STPTunnelGo/releases) ของ repo นี้ — ถ้ายังไม่เคยสร้าง release จริงบน GitHub ให้เปลี่ยนไปชี้ที่อื่นที่แจกไฟล์จริงได้ก่อน (เช่น Drive) จนกว่าจะตั้ง GitHub Release เสร็จ
+```bash
+jq -n --rawfile content latest.json '{files: {"latest.json": {content: $content}}}' \
+  | gh api gists/4a70a4fb82706c462054048e942096b1 --method PATCH --input -
+```
+
+แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** หรือไอคอน ⋮ มุมขวาบน — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
+
+`url` ในไฟล์ตอนนี้ชี้ไปหน้า [GitHub Releases](https://github.com/Sitthiphong-krobkrong/STPTunnelGo/releases) ของ repo นี้ — ใช้ได้เพราะเป็นแค่ลิงก์ให้เปิดใน browser (เพื่อนที่ login GitHub แล้วเป็น collaborator ของ repo อยู่แล้วจะเข้าดูได้ปกติ) ถ้ายังไม่เคยสร้าง release จริงบน GitHub ให้เปลี่ยนไปชี้ที่อื่นที่แจกไฟล์จริงได้ก่อน (เช่น Drive) จนกว่าจะตั้ง GitHub Release เสร็จ
 
 ถ้าลบ/ล้างค่า `updateFeedURL` ให้ว่าง ฟีเจอร์นี้จะไม่ทำงานเฉยๆ ไม่ error
 
