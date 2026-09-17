@@ -184,7 +184,7 @@ func (a *App) buildUI() fyne.CanvasObject {
 	title.TextSize = 18
 	title.TextStyle = fyne.TextStyle{Bold: true}
 
-	header := container.NewBorder(nil, nil, title, nil)
+	header := container.NewBorder(nil, nil, title, a.buildHeaderMenuButton())
 
 	projectBar := a.buildProjectRow()
 	connLine := a.buildConnectionLine()
@@ -227,6 +227,24 @@ func (a *App) buildFooter() fyne.CanvasObject {
 	right.TextSize = 11
 
 	return container.NewBorder(nil, nil, left, right)
+}
+
+// buildHeaderMenuButton is a kebab-menu icon at the top-right of the window,
+// mirroring Help → Copy diagnostics / Check for updates from the OS menu bar
+// — that menu bar is easy to never notice, this keeps both one click away
+// without cluttering the main tunnel table with extra buttons.
+func (a *App) buildHeaderMenuButton() fyne.CanvasObject {
+	var btn *widget.Button
+	btn = widget.NewButtonWithIcon("", theme.MoreVerticalIcon(), func() {
+		menu := fyne.NewMenu("",
+			fyne.NewMenuItem("Copy diagnostics", a.doCopyDiagnostics),
+			fyne.NewMenuItem("Check for updates", a.doCheckForUpdates),
+		)
+		popup := widget.NewPopUpMenu(menu, a.win.Canvas())
+		popup.ShowAtRelativePosition(fyne.NewPos(0, btn.Size().Height), btn)
+	})
+	btn.Importance = widget.LowImportance
+	return btn
 }
 
 func (a *App) buildLogSection() fyne.CanvasObject {
@@ -514,6 +532,20 @@ func (a *App) refreshSelectedCount() {
 		}
 	}
 	a.selectedLabel.SetText(fmt.Sprintf("Selected: %d", n))
+
+	// Start/Stop/Delete act on the checked rows, so they're meaningless
+	// (and previously just popped a "Nothing Selected" dialog) with none
+	// checked. Stop all is deliberately left enabled — it ignores the
+	// checkboxes and stops every running tunnel in the project.
+	if n == 0 {
+		a.btnStartSelected.Disable()
+		a.btnStopSelected.Disable()
+		a.btnDeleteSelected.Disable()
+	} else {
+		a.btnStartSelected.Enable()
+		a.btnStopSelected.Enable()
+		a.btnDeleteSelected.Enable()
+	}
 }
 
 func (a *App) refreshKeyLabel() {

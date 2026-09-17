@@ -25,14 +25,18 @@ var (
 // copyright is shown in the window footer.
 const copyright = "\u00a9 2026 stp"
 
-// updateFeedURL points at a small JSON file describing the latest release.
-// Leave it empty until there's somewhere to host releases — the update check
-// then simply stays out of the way instead of failing.
+// updateFeedURL points at a small JSON file describing the latest release —
+// latest.json at the repo root, read straight off the main branch via
+// raw.githubusercontent.com. Leave it empty to turn the update check off
+// entirely instead of failing.
 //
 // Expected contents:
 //
 //	{"version": "1.0.1", "url": "https://.../releases", "notes": "what changed"}
-const updateFeedURL = ""
+//
+// Bump the version (and notes) in latest.json — and push it to main — as
+// part of every release; see "Build สำหรับแจกจ่าย" in README.md.
+const updateFeedURL = "https://raw.githubusercontent.com/Sitthiphong-krobkrong/STPTunnelGo/main/latest.json"
 
 type releaseInfo struct {
 	Version string `json:"version"`

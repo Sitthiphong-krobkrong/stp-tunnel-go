@@ -3,12 +3,58 @@
 #
 #   ./build.sh            → build for this machine only
 #   ./build.sh all        → macOS .app + Windows .exe (Windows needs Docker running)
-#   VERSION=1.2.0 ./build.sh all   → override the version
+#   VERSION=1.2.0 ./build.sh all   → override the version (skips the auto-bump prompt below)
 #
-# Bump VERSION for each release you hand out.
+# The released version lives in VERSION (repo root) — that's the source of
+# truth `./build.sh` (no args) falls back to. `./build.sh all` additionally
+# looks at commits since the last v<version> tag: if any use the
+# Conventional Commits feat:/fix:/BREAKING CHANGE prefix, it offers to bump
+# VERSION for you before building. Setting VERSION explicitly always skips
+# that prompt.
 set -euo pipefail
 
-VERSION="${VERSION:-1.0.0}"
+VERSION_FILE="VERSION"
+CURRENT_VERSION="$(cat "${VERSION_FILE}" 2>/dev/null || echo "1.0.0")"
+
+if [ "${1:-local}" == "all" ] && [ -z "${VERSION:-}" ]; then
+  LAST_TAG="v${CURRENT_VERSION}"
+  if git rev-parse -q --verify "refs/tags/${LAST_TAG}" >/dev/null; then
+    COMMIT_RANGE="${LAST_TAG}..HEAD"
+  else
+    COMMIT_RANGE="HEAD"
+  fi
+  COMMITS="$(git log --pretty=format:'%s' "${COMMIT_RANGE}" -- 2>/dev/null || true)"
+
+  BUMP=""
+  if echo "${COMMITS}" | grep -qE '^[a-z]+(\([^)]+\))?!:|^BREAKING CHANGE'; then
+    BUMP="major"
+  elif echo "${COMMITS}" | grep -qE '^feat(\([^)]+\))?:'; then
+    BUMP="minor"
+  elif echo "${COMMITS}" | grep -qE '^fix(\([^)]+\))?:'; then
+    BUMP="patch"
+  fi
+
+  # -t 0 guards against hanging a non-interactive run (CI, etc.) — it just
+  # builds the current VERSION unchanged in that case.
+  if [ -n "${BUMP}" ] && [ -t 0 ]; then
+    IFS='.' read -r MAJOR MINOR PATCH <<< "${CURRENT_VERSION}"
+    case "${BUMP}" in
+      major) NEXT_VERSION="$((MAJOR + 1)).0.0" ;;
+      minor) NEXT_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+      patch) NEXT_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+    esac
+    echo "พบ commit ประเภท ${BUMP} ตั้งแต่ ${LAST_TAG}:"
+    echo "${COMMITS}" | grep -E '^(feat|fix)(\([^)]+\))?!?:|^BREAKING CHANGE' | sed 's/^/  - /'
+    read -r -p "Bump version ${CURRENT_VERSION} → ${NEXT_VERSION}? [Y/n] " ANSWER
+    if [[ ! "${ANSWER}" =~ ^[Nn] ]]; then
+      CURRENT_VERSION="${NEXT_VERSION}"
+      echo "${CURRENT_VERSION}" > "${VERSION_FILE}"
+      echo "→ VERSION → ${CURRENT_VERSION}. อย่าลืมอัปเดต CHANGELOG.md / README.md แล้ว commit + tag v${CURRENT_VERSION} เอง"
+    fi
+  fi
+fi
+
+VERSION="${VERSION:-${CURRENT_VERSION}}"
 BUILD_DATE="$(date +%F)"
 LDFLAGS="-X main.version=${VERSION} -X main.buildDate=${BUILD_DATE}"
 APP_ID="com.stp.tunnel"

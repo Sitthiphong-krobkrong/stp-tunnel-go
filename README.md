@@ -249,10 +249,12 @@ go vet ./...
 VERSION=1.2.0 ./build.sh all   # กำหนดเลขเวอร์ชันเอง
 ```
 
-เวอร์ชันปัจจุบันคือ `1.0.0` — เพิ่มเลขทุกครั้งที่แจกรอบใหม่ (`VERSION=1.0.1 ./build.sh all`)
+เวอร์ชันปัจจุบันอยู่ในไฟล์ [VERSION](VERSION) — นี่คือ source of truth เพียงจุดเดียว
 เวอร์ชันจะแสดงที่**มุมซ้ายล่างของหน้าต่างตลอดเวลา** เพื่อนดูได้ทันทีโดยไม่ต้องเปิดเมนู
 
-อย่าลืมอัปเดตบรรทัด **เวอร์ชัน/อัปเดตล่าสุด** บนสุดของไฟล์นี้ให้ตรงกันทุกครั้งที่แจกรอบใหม่ด้วย พร้อมเพิ่มแถวใหม่ในตาราง "สรุป release" และ entry เต็มใน [CHANGELOG.md](CHANGELOG.md)
+`./build.sh all` (ไม่ระบุ `VERSION` เอง) จะเช็ค commit ตั้งแต่ tag `v<เวอร์ชันปัจจุบัน>` ก่อนเสมอ — ถ้าเจอ commit ที่ใช้ prefix แบบ [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, หรือ `BREAKING CHANGE`) จะถามว่าจะ bump เวอร์ชันให้ไหม (feat = minor, fix = patch, breaking = major) ก่อนเริ่ม build ตอบ `y` แล้วมันจะอัปเดต [VERSION](VERSION) ให้ — ที่เหลือ (CHANGELOG.md, บรรทัดเวอร์ชันด้านบนของไฟล์นี้, `git tag`) ยังต้องทำเองเหมือนเดิม
+
+อย่าลืมอัปเดตบรรทัด **เวอร์ชัน/อัปเดตล่าสุด** บนสุดของไฟล์นี้ให้ตรงกันทุกครั้งที่แจกรอบใหม่ด้วย พร้อมเพิ่มแถวใหม่ในตาราง "สรุป release" และ entry เต็มใน [CHANGELOG.md](CHANGELOG.md) — และอัปเดต [latest.json](latest.json) ให้ตรงเวอร์ชันแล้ว push ขึ้น `main` ด้วย (ดูหัวข้อ "แจ้งเตือนเวอร์ชันใหม่" ด้านล่าง) ไม่งั้นเพื่อนกด Check for updates แล้วจะไม่เจออะไรใหม่
 
 ถ้าแก้พฤติกรรมที่ผู้ใช้เจอ (ไม่ใช่แค่โค้ดภายใน) อย่าลืมแก้ [GUIDE-macOS.md](GUIDE-macOS.md) และ [GUIDE-Windows.md](GUIDE-Windows.md) ให้ตรงกับส่วน "สำหรับผู้ใช้งาน" ด้านบนด้วย — ไฟล์พวกนี้ไม่ได้ sync กันอัตโนมัติ
 
@@ -265,14 +267,17 @@ go install github.com/fyne-io/fyne-cross@latest
 
 ### แจ้งเตือนเวอร์ชันใหม่
 
-ตั้งค่าที่ `updateFeedURL` ใน [release.go](release.go) ให้ชี้ไปที่ไฟล์ JSON ที่ฝากไว้ที่ไหนสักแห่ง (GitHub release, Drive, share ภายใน):
+`updateFeedURL` ใน [release.go](release.go) ชี้ไปที่ [latest.json](latest.json) ในนี้อยู่แล้ว (อ่านตรงจาก `main` ผ่าน raw.githubusercontent.com) — ไม่ต้องตั้งค่าอะไรเพิ่ม แค่อัปเดตไฟล์นั้นทุกรอบที่แจก:
 
 ```json
 {"version": "1.0.1", "url": "https://.../releases", "notes": "แก้ปัญหา host key"}
 ```
 
-แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates**
-ถ้าปล่อยว่างไว้ ฟีเจอร์นี้จะไม่ทำงานเฉยๆ ไม่ error
+แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
+
+`url` ในไฟล์ตอนนี้ชี้ไปหน้า [GitHub Releases](https://github.com/Sitthiphong-krobkrong/STPTunnelGo/releases) ของ repo นี้ — ถ้ายังไม่เคยสร้าง release จริงบน GitHub ให้เปลี่ยนไปชี้ที่อื่นที่แจกไฟล์จริงได้ก่อน (เช่น Drive) จนกว่าจะตั้ง GitHub Release เสร็จ
+
+ถ้าลบ/ล้างค่า `updateFeedURL` ให้ว่าง ฟีเจอร์นี้จะไม่ทำงานเฉยๆ ไม่ error
 
 > `GOOS=windows go build` เฉยๆ ใช้ไม่ได้ เพราะ Fyne ผูกกับ OpenGL ผ่าน CGO จึงต้อง cross-compiler ของแต่ละแพลตฟอร์ม ซึ่ง `fyne-cross` เตรียมไว้ให้ใน Docker image
 

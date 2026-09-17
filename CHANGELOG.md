@@ -16,6 +16,9 @@
 
 ### Added
 
+- [VERSION](VERSION) เป็น source of truth เดียวของเลขเวอร์ชัน — `./build.sh all` เช็ค commit ตั้งแต่ tag `v<เวอร์ชันปัจจุบัน>` อัตโนมัติ ถ้าเจอ prefix แบบ Conventional Commits (`feat:`/`fix:`/`BREAKING CHANGE`) จะถามก่อนว่าจะ bump เวอร์ชันให้ไหม (ดู "Build สำหรับแจกจ่าย" ใน [README.md](README.md))
+- เปิดใช้ "Check for updates" จริง — [latest.json](latest.json) ใหม่ + `updateFeedURL` ใน [release.go](release.go) ชี้ไปที่ไฟล์นั้นผ่าน raw.githubusercontent.com แล้ว เดิมค่านี้ว่างเปล่าฟีเจอร์เลยไม่เคยทำงาน (ดู "แจ้งเตือนเวอร์ชันใหม่" ใน [README.md](README.md))
+- เพิ่มไอคอนเมนู (⋮) มุมขวาบนของหน้าต่างหลัก กดแล้วเป็น dropdown "Copy diagnostics" / "Check for updates" — เดิมสองอันนี้อยู่แค่ในเมนู Help บนแถบเมนูระบบซึ่งพลาดง่าย
 - ถามยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ ("N tunnel(s) are still running. Quitting will stop them all.") — ปิดแอปทันทีเหมือนเดิมถ้าไม่มี tunnel ไหนรันอยู่
 - [GUIDE-macOS.md](GUIDE-macOS.md) / [GUIDE-Windows.md](GUIDE-Windows.md) — คู่มือย่อสำหรับผู้ใช้ปลายทาง แยกไฟล์ตาม OS ไม่ปนกัน `build.sh all` ก็อปไฟล์ที่ตรง OS ใส่เป็น `GUIDE.md` ใน `dist/mac/` และ `dist/win/` ให้อัตโนมัติ แจกทีมได้โดยไม่ต้องทำอะไรเพิ่ม
 
