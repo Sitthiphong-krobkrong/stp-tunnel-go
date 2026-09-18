@@ -807,6 +807,49 @@ func (a *App) showProjectForm(p Project, isNew bool) {
 		passwordRow.SetText("Saved in your system keychain")
 	}
 
+	testResult := widget.NewLabel("Not tested yet")
+	testResult.Importance = widget.LowImportance
+	testResult.Wrapping = fyne.TextWrapWord
+	var testBtn *widget.Button
+	testBtn = widget.NewButton("Test", func() {
+		if host.Text == "" || user.Text == "" {
+			dialog.ShowError(fmt.Errorf("bastion host and user are required to test"), a.win)
+			return
+		}
+		test := Project{
+			ID:               p.ID,
+			BastionHost:      host.Text,
+			BastionUser:      user.Text,
+			BastionPort:      port.Text,
+			IdentityFile:     identity.Text,
+			SkipHostKeyCheck: skipHostKey.Checked,
+		}
+		testResult.Importance = widget.LowImportance
+		testResult.SetText("Not tested yet")
+		// withAuth may need to pop its own password dialog first (nothing
+		// disabled yet, so cancelling it just leaves this button alone); the
+		// actual dial only starts once credentials are in hand.
+		a.withAuth(test, func(auth []ssh.AuthMethod) {
+			testBtn.SetText("Testing…")
+			testBtn.Disable()
+			go func() {
+				err := a.runtime.TestConnection(test, auth)
+				fyne.Do(func() {
+					testBtn.SetText("Test")
+					testBtn.Enable()
+					if err != nil {
+						testResult.Importance = widget.DangerImportance
+						testResult.SetText(err.Error())
+						return
+					}
+					testResult.Importance = widget.SuccessImportance
+					testResult.SetText(fmt.Sprintf("Connected to %s@%s successfully.", test.BastionUser, test.BastionHost))
+				})
+			}()
+		})
+	})
+	testRow := container.NewBorder(nil, nil, nil, testBtn, testResult)
+
 	form := dialog.NewForm(
 		map[bool]string{true: "New Project", false: "Edit Project"}[isNew],
 		"Save", "Cancel",
@@ -818,6 +861,7 @@ func (a *App) showProjectForm(p Project, isNew bool) {
 			widget.NewFormItem("Identity file", identityRow),
 			widget.NewFormItem("", skipHostKey),
 			widget.NewFormItem("Password", container.NewBorder(nil, nil, nil, forgetBtn, passwordRow)),
+			widget.NewFormItem("Connection", testRow),
 		},
 		func(ok bool) {
 			if !ok {

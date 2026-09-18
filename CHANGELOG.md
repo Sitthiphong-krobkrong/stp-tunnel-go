@@ -10,9 +10,12 @@
 
 | Version | วันที่ | สรุป |
 |---|---|---|
+| 1.1.0 | 2026-09-18 | ปุ่ม Test connection ก่อนใช้จริง, macOS build เป็น universal binary (arm64+amd64) + zip ด้วย `ditto` อัตโนมัติ (แก้ปัญหาเปิดไม่ได้บน Intel Mac และตอนอัปขึ้น Google Drive), เปิดใช้ check-for-updates จริง, เมนู (⋮) สำหรับ diagnostics/update, ยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ |
 | 1.0.0 | 2026-09-17 | เวอร์ชันแรก — tunnel manager ครบชุด, system tray menu, คอลัมน์ Latency, ไอคอนแอปใหม่ |
 
 ## [Unreleased]
+
+## [1.1.0] - 2026-09-18
 
 ### Added
 
@@ -21,6 +24,7 @@
 - เพิ่มไอคอนเมนู (⋮) มุมขวาบนของหน้าต่างหลัก กดแล้วเป็น dropdown "Copy diagnostics" / "Check for updates" — เดิมสองอันนี้อยู่แค่ในเมนู Help บนแถบเมนูระบบซึ่งพลาดง่าย
 - ถามยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ ("N tunnel(s) are still running. Quitting will stop them all.") — ปิดแอปทันทีเหมือนเดิมถ้าไม่มี tunnel ไหนรันอยู่
 - [GUIDE-macOS.md](GUIDE-macOS.md) / [GUIDE-Windows.md](GUIDE-Windows.md) — คู่มือย่อสำหรับผู้ใช้ปลายทาง แยกไฟล์ตาม OS ไม่ปนกัน `build.sh all` ก็อปไฟล์ที่ตรง OS ใส่เป็น `GUIDE.md` ใน `dist/mac/` และ `dist/win/` ให้อัตโนมัติ แจกทีมได้โดยไม่ต้องทำอะไรเพิ่ม
+- ปุ่ม **"Test connection"** ใน New/Edit Project — ลองต่อ SSH ด้วยค่าที่กรอกในฟอร์ม (host/user/port/identity file/skip host key) ได้ทันทีโดยไม่ต้อง Save หรือไปสร้าง tunnel ก่อน ใช้ auth logic เดียวกับตอนกด Start (key file → password ที่จำไว้ → ถามรหัสผ่าน)
 
 ### Fixed
 
@@ -29,6 +33,9 @@
 - แก้ binary ที่ build ด้วย `go build` เฉยๆ (ลืม `-ldflags`) เคยรายงานตัวเองว่า `1.0.0` เหมือน release จริงแบ่งแยกไม่ออก — ตอนนี้ fallback เป็น `dev` แทน
 - เพิ่ม log ตอนหา home directory ไม่เจอแล้วต้องปิด host-key verification ให้ (เดิมปิดเงียบๆ ไม่ขึ้นใน LOG panel เลย)
 - ลบ `fileExists` ที่ไม่ได้ใช้ที่ไหนแล้ว (dead code)
+- `build.sh` เดิม build .app ให้แค่ CPU ของเครื่องที่ build (arm64 บน Apple Silicon) — เครื่องทีมที่เป็น Intel Mac เปิดแอปไม่ได้เลย ("The application ... can't be opened") ตอนนี้ cross-build อีก arch แล้ว `lipo` รวมเป็น universal binary ก่อน re-sign
+- `build.sh` เดิมส่งมอบแค่โฟลเดอร์ `.app` เปล่าๆ ให้ไปจัดการเอง — ถ้าลากขึ้น Google Drive/Slack ตรงๆ โดยไม่ zip ก่อน บริการเหล่านั้นจะ auto-zip ให้ตอนดาวน์โหลดแล้วทำ Unix executable permission ของ binary ข้างในหาย เปิดไม่ได้ไม่ว่า CPU รุ่นไหน ตอนนี้ `build.sh` zip ด้วย `ditto` ให้เสร็จเป็น `STPTunnel-<version>.zip` พร้อมแจกทันที
+- [GUIDE-macOS.md](GUIDE-macOS.md) เพิ่มขั้นตอนสำหรับ dialog "Apple could not verify ... is free of malware" (ไม่มีปุ่ม Open Anyway ให้กดตรงๆ) ที่เจอใน macOS รุ่นใหม่ๆ เช่น Sonoma/Sequoia — ต้องไป System Settings → Privacy & Security แทน
 
 ### Known issues
 

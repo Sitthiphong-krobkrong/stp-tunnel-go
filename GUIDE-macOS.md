@@ -8,6 +8,12 @@
 
 **ครั้งแรกที่เปิด** — **คลิกขวาที่ `STPTunnel.app` → Open** แล้วกด **Open** อีกครั้งเพื่อยืนยัน (ถ้า double-click ธรรมดาจะโดน Gatekeeper บล็อก เพราะแอปยังไม่ได้ซื้อ code signing certificate) ทำแบบนี้ครั้งเดียวต่อเครื่อง หลังจากนั้นเปิดได้ปกติ
 
+ถ้าเจอ dialog **"Apple could not verify ... is free of malware"** ที่มีแค่ปุ่ม **Move to Trash / Done** (ไม่มี Open Anyway ให้กดตรงนั้น — พบใน macOS รุ่นใหม่ๆ เช่น Sonoma/Sequoia):
+
+1. กด **Done** (อย่ากด Move to Trash)
+2. ไปที่ **System Settings → Privacy & Security** เลื่อนลงมาส่วน Security จะเห็นข้อความว่าแอปถูกบล็อก → กด **Open Anyway** → ใส่รหัสเครื่อง/Touch ID ยืนยัน
+3. ครั้งต่อไปเปิดได้ปกติ
+
 ## เริ่มใช้งาน
 
 1. **New** → สร้าง project (1 project = 1 server ที่จะ SSH เข้าไป: Name, Bastion host, Bastion user, Bastion port)

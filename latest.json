@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "url": "https://github.com/Sitthiphong-krobkrong/STPTunnelGo/releases",
-  "notes": ""
+  "notes": "• Test connection button in project settings — checks a key or password before it's ever used to start a tunnel\n• macOS build is now a universal binary (arm64+amd64) — Intel Macs could not open the app before\n• macOS release now ships as a proper zip (was a loose .app folder, which Google Drive/Slack silently corrupt on download)\n• Quit now asks for confirmation while tunnels are still running\n• Copy diagnostics / Check for updates now also in a menu button on the main window, not just Help"
 }

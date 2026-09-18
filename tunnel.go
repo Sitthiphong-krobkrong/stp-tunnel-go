@@ -119,7 +119,7 @@ func (r *TunnelRuntime) Start(t TunnelConfig, p Project, auth []ssh.AuthMethod) 
 	bastion := net.JoinHostPort(p.BastionHost, portOrDefault(p.BastionPort))
 	r.log(t.ID, "connecting to %s as %s", bastion, p.BastionUser)
 
-	client, err := r.dial(t.ID, bastion, p, auth)
+	client, err := r.dial(func(f string, args ...any) { r.log(t.ID, f, args...) }, bastion, p, auth)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,11 @@ func (r *TunnelRuntime) Start(t TunnelConfig, p Project, auth []ssh.AuthMethod) 
 // offers ed25519 while known_hosts only holds an older type looks like a key
 // mismatch. When that happens we retry, this time asking for exactly the
 // algorithms known_hosts has for that host.
-func (r *TunnelRuntime) dial(tunnelID, bastion string, p Project, auth []ssh.AuthMethod) (*ssh.Client, error) {
+//
+// logf receives progress/diagnostic lines (host key retries, etc.); Start
+// routes them into the tunnel's own log panel, while a bare connection test
+// has nowhere to show them and passes a no-op.
+func (r *TunnelRuntime) dial(logf func(string, ...any), bastion string, p Project, auth []ssh.AuthMethod) (*ssh.Client, error) {
 	newConfig := func(cb ssh.HostKeyCallback, algos []string) *ssh.ClientConfig {
 		return &ssh.ClientConfig{
 			User:              p.BastionUser,
@@ -188,7 +192,7 @@ func (r *TunnelRuntime) dial(tunnelID, bastion string, p Project, auth []ssh.Aut
 	}
 
 	if p.SkipHostKeyCheck {
-		r.log(tunnelID, "host key verification is off for this project")
+		logf("host key verification is off for this project")
 		client, err := ssh.Dial("tcp", bastion, newConfig(ssh.InsecureIgnoreHostKey(), nil))
 		if err != nil {
 			return nil, fmt.Errorf("connect %s: %w", bastion, err)
@@ -197,7 +201,7 @@ func (r *TunnelRuntime) dial(tunnelID, bastion string, p Project, auth []ssh.Aut
 	}
 
 	var mismatch *knownhosts.KeyError
-	cb, err := hostKeyChecker(r, tunnelID, &mismatch)
+	cb, err := hostKeyChecker(logf, &mismatch)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +221,7 @@ func (r *TunnelRuntime) dial(tunnelID, bastion string, p Project, auth []ssh.Aut
 				algos = append(algos, typ)
 			}
 		}
-		r.log(tunnelID, "retrying with the host key types in known_hosts: %s", strings.Join(algos, ", "))
+		logf("retrying with the host key types in known_hosts: %s", strings.Join(algos, ", "))
 
 		mismatch = nil
 		client, retryErr := ssh.Dial("tcp", bastion, newConfig(cb, algos))
@@ -233,6 +237,20 @@ func (r *TunnelRuntime) dial(tunnelID, bastion string, p Project, auth []ssh.Aut
 	}
 
 	return nil, fmt.Errorf("connect %s: %w", bastion, err)
+}
+
+// TestConnection dials the project's bastion and immediately closes the
+// connection, without opening a local listener or tracking anything in
+// r.running. It backs the "Test connection" button in the project editor,
+// so a key or password can be checked before it's ever used to start a
+// tunnel.
+func (r *TunnelRuntime) TestConnection(p Project, auth []ssh.AuthMethod) error {
+	bastion := net.JoinHostPort(p.BastionHost, portOrDefault(p.BastionPort))
+	client, err := r.dial(func(string, ...any) {}, bastion, p, auth)
+	if err != nil {
+		return err
+	}
+	return client.Close()
 }
 
 func (r *TunnelRuntime) acceptLoop(tunnelID string, live *liveTunnel, target string) {
@@ -372,16 +390,16 @@ func KeyAuth(path, passphrase string) ([]ssh.AuthMethod, error) {
 // there, and accepts (with a log line) the first time a host is seen — the
 // same trade-off as ssh's StrictHostKeyChecking=accept-new. Mismatches are
 // reported through mismatch so the caller can retry with matching algorithms.
-func hostKeyChecker(r *TunnelRuntime, tunnelID string, mismatch **knownhosts.KeyError) (ssh.HostKeyCallback, error) {
+func hostKeyChecker(logf func(string, ...any), mismatch **knownhosts.KeyError) (ssh.HostKeyCallback, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		r.log(tunnelID, "could not find home directory — accepting host keys without verification")
+		logf("could not find home directory — accepting host keys without verification")
 		return ssh.InsecureIgnoreHostKey(), nil
 	}
 
 	path := filepath.Join(home, ".ssh", "known_hosts")
 	if _, err := os.Stat(path); err != nil {
-		r.log(tunnelID, "no known_hosts file — accepting host key on first use")
+		logf("no known_hosts file — accepting host key on first use")
 		return ssh.InsecureIgnoreHostKey(), nil
 	}
 
@@ -399,7 +417,7 @@ func hostKeyChecker(r *TunnelRuntime, tunnelID string, mismatch **knownhosts.Key
 		var keyErr *knownhosts.KeyError
 		if errors.As(err, &keyErr) {
 			if len(keyErr.Want) == 0 {
-				r.log(tunnelID, "host %s not in known_hosts — accepting on first use", hostname)
+				logf("host %s not in known_hosts — accepting on first use", hostname)
 				return nil
 			}
 			*mismatch = keyErr // a real mismatch: let dial() decide what to do
