@@ -25,6 +25,8 @@ func (a *App) buildMainMenu() *fyne.MainMenu {
 	)
 
 	help := fyne.NewMenu("Help",
+		fyne.NewMenuItem("Getting started", a.showGuide),
+		fyne.NewMenuItemSeparator(),
 		fyne.NewMenuItem("Copy diagnostics", a.doCopyDiagnostics),
 		fyne.NewMenuItem("Check for updates", a.doCheckForUpdates),
 	)

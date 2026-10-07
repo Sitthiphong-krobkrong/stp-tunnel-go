@@ -17,6 +17,7 @@
 
 ### Added
 
+- คู่มือ **Getting started** เด้งขึ้นมาเองตอนเปิดแอปครั้งแรก — 8 ขั้นตอน ทีละหน้า (ข้าม / ย้อนกลับ / ถัดไป) แต่ละหน้าเป็นภาพหน้าจอจริงของแอปพร้อมกรอบแดงรอบปุ่มที่ต้องกด: สร้าง Project → กรอก bastion + Test → Add tunnel → ใส่ port → ติ๊ก + Start → ใส่รหัสผ่าน → ใช้งาน (RUNNING / ERROR / LOG) → Export ให้ทีม ถ้ายังไม่มี project หน้าสุดท้ายมีปุ่ม New Project / Import setup... ให้กดเริ่มได้ทันที เปิดดูซ้ำได้ที่ Help > Getting started หรือปุ่ม (⋮) มุมขวาบน — จำว่าเคยดูแล้วด้วยไฟล์ `guide-seen` ข้าง `config.json` (ลบไฟล์นี้ถ้าอยากให้เด้งอีกครั้ง) ภาพหน้าจออยู่ใน [docs/guide/](docs/guide/) สร้างใหม่ได้ด้วย `go test -tags screenshots -run TestGuideScreenshots .`
 - ภาพประกอบใน README: ภาพรวมแอป, เกิดอะไรขึ้นตอนกด Start, สถานะของ tunnel (ไฟล์ต้นฉบับอยู่ใน [docs/architecture/](docs/architecture/))
 
 ### Changed

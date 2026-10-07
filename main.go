@@ -93,6 +93,7 @@ func main() {
 	a.checkForUpdatesQuietly()
 	a.startLatencyRefresh()
 	win.SetCloseIntercept(a.confirmClose)
+	fyneApp.Lifecycle().SetOnStarted(a.showGuideIfFirstRun)
 	win.ShowAndRun()
 }
 
@@ -230,13 +231,15 @@ func (a *App) buildFooter() fyne.CanvasObject {
 }
 
 // buildHeaderMenuButton is a kebab-menu icon at the top-right of the window,
-// mirroring Help → Copy diagnostics / Check for updates from the OS menu bar
+// mirroring Help → Getting started / Copy diagnostics / Check for updates from the OS menu bar
 // — that menu bar is easy to never notice, this keeps both one click away
 // without cluttering the main tunnel table with extra buttons.
 func (a *App) buildHeaderMenuButton() fyne.CanvasObject {
 	var btn *widget.Button
 	btn = widget.NewButtonWithIcon("", theme.MoreVerticalIcon(), func() {
 		menu := fyne.NewMenu("",
+			fyne.NewMenuItem("Getting started", a.showGuide),
+			fyne.NewMenuItemSeparator(),
 			fyne.NewMenuItem("Copy diagnostics", a.doCopyDiagnostics),
 			fyne.NewMenuItem("Check for updates", a.doCheckForUpdates),
 		)

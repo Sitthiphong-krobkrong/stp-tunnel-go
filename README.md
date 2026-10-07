@@ -170,6 +170,8 @@ Target port : 5432          ← port ของ Postgres
 
 ลบไฟล์นี้ = เริ่มใหม่หมด (password ไม่ได้อยู่ในไฟล์นี้)
 
+ไฟล์ `guide-seen` ในโฟลเดอร์เดียวกันคือเครื่องหมายว่าเคยดูคู่มือ Getting started แล้ว — ลบทิ้งถ้าอยากให้คู่มือเด้งขึ้นมาอีกครั้งตอนเปิดแอป (หรือเปิดเองได้ที่ Help > Getting started)
+
 ---
 
 ## สำหรับผู้พัฒนา
@@ -214,6 +216,8 @@ main.go     — UI ทั้งหมด (layout, dialogs, การกระท
 model.go    — โครงสร้างข้อมูล Project/TunnelConfig + อ่าน/เขียน config.json + merge ตอน import
 tunnel.go   — เชื่อมต่อ SSH จริง, forward port, จัดการ lifecycle ของแต่ละ tunnel, heartbeat วัด latency
 menu.go     — เมนู File/Help: import/export setup, diagnostics, เช็คอัปเดต, Quit
+guide.go    — คู่มือ Getting started (เด้งตอนเปิดครั้งแรก, ฝังภาพหน้าจอจาก docs/guide/)
+screenshots_test.go — สร้างภาพหน้าจอใน docs/guide/ จาก UI จริง (build tag `screenshots`)
 keyring.go  — อ่าน/เขียน/ลบ password ใน keychain ของระบบ
 release.go  — version ที่ฝังตอน build, เช็คอัปเดต, รวบรวม diagnostics
 theme.go    — custom dark theme
@@ -243,6 +247,16 @@ go run .
 go build -o stp-tunnel .
 go vet ./...
 ```
+
+### ภาพหน้าจอในคู่มือ Getting started
+
+ภาพใน [docs/guide/](docs/guide/) ไม่ได้แคปด้วยมือ — [screenshots_test.go](screenshots_test.go) เปิดหน้าจอและ dialog จริงของแอปแบบ off-screen ด้วยข้อมูลตัวอย่าง (`bastion.example.com`, `10.0.0.x` ไม่มี host จริง) แล้ววาดกรอบแดงรอบปุ่มของแต่ละขั้นจากตำแหน่งปุ่มจริง แก้ UI แล้วให้สร้างใหม่:
+
+```bash
+go test -tags screenshots -run TestGuideScreenshots .
+```
+
+ภาพถูกฝังเข้าแอปตอน build (`go:embed`) — ต้อง commit ภาพที่สร้างใหม่ด้วย
 
 ### Build สำหรับแจกจ่าย
 
