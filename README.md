@@ -2,7 +2,7 @@
 
 `stp-tunnel` · part of the **STP Tools** family
 
-**เวอร์ชัน:** 1.2.0 · **อัปเดตล่าสุด:** 2026-10-07 · **ผู้พัฒนา:** stp · [CHANGELOG](CHANGELOG.md)
+**เวอร์ชัน:** 1.2.1 · **อัปเดตล่าสุด:** 2026-10-07 · **ผู้พัฒนา:** stp · [CHANGELOG](CHANGELOG.md)
 
 A small desktop app for opening SSH port-forwards (tunnels) to internal servers — one window, a list of saved tunnels, start/stop with a click.
 
@@ -220,7 +220,7 @@ guide.go    — คู่มือ Getting started (เด้งตอนเป�
 screenshots_test.go — สร้างภาพหน้าจอใน docs/guide/ จาก UI จริง (build tag `screenshots`)
 keyring.go  — อ่าน/เขียน/ลบ password ใน keychain ของระบบ
 release.go  — version ที่ฝังตอน build, เช็คอัปเดต, รวบรวม diagnostics
-theme.go    — custom dark theme
+theme.go    — custom dark theme + ฟอนต์ไทย Noto Sans Thai ที่ฝังไว้ (fonts/, SIL OFL)
 tray.go     — system tray icon/menu (Show/Stop all/Quit)
 
 tools/genicon/main.go — สร้าง icon.png ใหม่ (ดู "ไอคอนแอป" ด้านล่าง)

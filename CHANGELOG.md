@@ -16,11 +16,23 @@
 
 | Version | วันที่ | สรุป |
 |---|---|---|
+| 1.2.1 | 2026-10-07 | ฟอนต์ไทย Noto Sans Thai ฝังในแอป — หน้าตาเหมือนกันทุกเครื่อง ตัวหนาไทยหนาจริง |
 | 1.2.0 | 2026-10-07 | Export/Import เลือกได้ราย project (+ ตั้งชื่อใหม่เมื่อชื่อ project ชนกัน), คู่มือ Getting started 8 ขั้นด้วยภาพหน้าจอจริงเด้งตอนเปิดแอปครั้งแรก, ภาพ diagram ใน README |
 | 1.1.0 | 2026-09-18 | ปุ่ม Test connection ก่อนใช้จริง, macOS build เป็น universal binary (arm64+amd64) + zip ด้วย `ditto` อัตโนมัติ (แก้ปัญหาเปิดไม่ได้บน Intel Mac และตอนอัปขึ้น Google Drive), เปิดใช้ check-for-updates จริง, เมนู (⋮) สำหรับ diagnostics/update, ยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ |
 | 1.0.0 | 2026-09-17 | เวอร์ชันแรก — tunnel manager ครบชุด, system tray menu, คอลัมน์ Latency, ไอคอนแอปใหม่ |
 
 ## [Unreleased]
+
+## [1.2.1] - 2026-10-07
+
+### Fixed
+
+- ตัวอักษรไทยในแอปหน้าตาเหมือนกันทั้ง Mac และ Windows และตัวหนาภาษาไทย (หัวข้อ, ปุ่ม) เป็นตัวหนาจริงแล้ว — เดิมไทยบางกว่าอังกฤษที่อยู่ข้างกัน
+
+### Internal
+
+- ฝังฟอนต์ Noto Sans Thai (Regular/Bold) ไว้ในแอป ([fonts/](fonts/), SIL Open Font License — [fonts/OFL.txt](fonts/OFL.txt)) เป็นฟอนต์หลักของธีม ตัวอังกฤษที่ไม่มีในฟอนต์นี้ Fyne ใช้ Noto Sans ตัวเดิมต่อให้เอง ฟอนต์ mono ไม่เปลี่ยน
+- สร้างภาพหน้าจอใน docs/guide/ ใหม่ด้วยฟอนต์ใหม่
 
 ## [1.2.0] - 2026-10-07
 

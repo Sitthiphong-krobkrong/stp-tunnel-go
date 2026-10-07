@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -55,7 +56,32 @@ func (stpTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color
 	return theme.DefaultTheme().Color(name, theme.VariantDark)
 }
 
-func (stpTheme) Font(s fyne.TextStyle) fyne.Resource { return theme.DefaultTheme().Font(s) }
+// Fyne's built-in font (Noto Sans) has no Thai, so Thai text used to come
+// from whatever the OS substituted: different on macOS and Windows, and
+// never actually bold. Noto Sans Thai is the same family, so it is the
+// primary face here; any glyph it lacks (all of Latin) falls through to
+// Fyne's own Noto Sans in the matching weight. Monospace stays Fyne's.
+// Fonts: fonts/ (SIL Open Font License, fonts/OFL.txt).
+var (
+	//go:embed fonts/NotoSansThai-Regular.ttf
+	notoSansThaiRegular []byte
+	//go:embed fonts/NotoSansThai-Bold.ttf
+	notoSansThaiBold []byte
+
+	fontThaiRegular = fyne.NewStaticResource("NotoSansThai-Regular.ttf", notoSansThaiRegular)
+	fontThaiBold    = fyne.NewStaticResource("NotoSansThai-Bold.ttf", notoSansThaiBold)
+)
+
+func (stpTheme) Font(s fyne.TextStyle) fyne.Resource {
+	switch {
+	case s.Monospace, s.Symbol:
+		return theme.DefaultTheme().Font(s)
+	case s.Bold:
+		return fontThaiBold
+	default:
+		return fontThaiRegular // Thai has no italic; Latin italic still falls back to Noto Sans Italic
+	}
+}
 
 func (stpTheme) Icon(n fyne.ThemeIconName) fyne.Resource { return theme.DefaultTheme().Icon(n) }
 
