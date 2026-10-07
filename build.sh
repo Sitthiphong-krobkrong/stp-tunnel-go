@@ -208,4 +208,4 @@ echo "ขั้นที่เหลือ ทำเองทีละขั้�
 echo "  1. เช็ค CHANGELOG.md ว่าเนื้อหาครบและมีแถวใน \"สรุป release\" แล้ว"
 echo "  2. git add -A && git commit -m \"release v${VERSION}\""
 echo "  3. git tag v${VERSION} && git push && git push --tags"
-echo "  4. sync latest.json ขึ้น gist — ดูคำสั่งใน README.md หัวข้อ \"แจ้งเตือนเวอร์ชันใหม่\""
+echo "  4. ./publish.sh — อัปโหลด zip ขึ้นโฟลเดอร์แชร์ แล้วสลับ gist ให้ทีมเห็นแจ้งเตือน"

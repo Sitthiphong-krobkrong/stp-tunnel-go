@@ -294,12 +294,25 @@ go install github.com/fyne-io/fyne-cross@latest
 {"version": "1.0.1", "url": "https://.../releases", "notes": "แก้ปัญหา host key"}
 ```
 
-แก้เสร็จแล้ว sync ขึ้น gist ด้วยคำสั่งนี้ (URL ที่แอปเรียกจะไม่เปลี่ยน เพราะ URL แบบไม่มี revision hash จะพาไปหา revision ล่าสุดเสมอ):
+### ปล่อยอัปเดตให้ทีม (ทุกรอบ)
 
 ```bash
-jq -n --rawfile content latest.json '{files: {"latest.json": {content: $content}}}' \
-  | gh api gists/4a70a4fb82706c462054048e942096b1 --method PATCH --input -
+./build.sh all     # 1. build (มัน sync version ลง latest.json ให้) — แก้ notes ใน latest.json ให้ตรงรอบนี้ด้วย
+./publish.sh       # 2. อัปโหลด + แจ้งเตือนทีม
 ```
+
+`./publish.sh` ทำตามลำดับนี้ให้:
+
+1. เช็คว่า VERSION, `latest.json` และ zip ใน `dist/mac` + `dist/win` ตรงกัน และบอกว่าตอนนี้ทีมเห็นเวอร์ชันไหนอยู่ (ถ้าปล่อยไปแล้วก็จบเลย ไม่ทำซ้ำ)
+2. โชว์ข้อความ `notes` ที่ทีมจะเห็นใน dialog
+3. เปิด Finder ที่ `dist/` กับโฟลเดอร์แชร์ใน browser ให้ลากไฟล์ขึ้นไป แล้ว**รอให้ตอบ y ว่าอัปโหลดแล้ว**
+4. ค่อยอัปเดต gist แล้วเช็คว่าขึ้นจริง — นาทีนี้แหละที่ทีมเริ่มเห็นแจ้งเตือน
+
+ถ้าอัปโหลดไว้แล้ว ใช้ `./publish.sh --yes` ข้ามคำถามข้อ 3 ได้ (ต้องมี `gh` ที่ login แล้วและมี scope `gist`)
+
+ฝั่งเพื่อน: เปิดแอป → เด้ง **Update Available** → กด **Download it here** → เปิดโฟลเดอร์แชร์ → โหลด zip ของเครื่องตัวเองไปติดตั้งทับ (project/tunnel/รหัสที่จำไว้ยังอยู่ครบ เพราะเก็บแยกจากตัวแอป)
+
+URL ที่แอปเรียกไม่เปลี่ยนเลย เพราะ URL ของ gist แบบไม่มี revision hash จะพาไปหา revision ล่าสุดเสมอ
 
 แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** หรือไอคอน ⋮ มุมขวาบน — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
 
