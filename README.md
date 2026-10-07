@@ -303,7 +303,7 @@ jq -n --rawfile content latest.json '{files: {"latest.json": {content: $content}
 
 แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** หรือไอคอน ⋮ มุมขวาบน — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
 
-`url` ในไฟล์ตอนนี้ชี้ไปหน้า [GitHub Releases](https://github.com/Sitthiphong-krobkrong/STPTunnelGo/releases) ของ repo นี้ — ใช้ได้เพราะเป็นแค่ลิงก์ให้เปิดใน browser (เพื่อนที่ login GitHub แล้วเป็น collaborator ของ repo อยู่แล้วจะเข้าดูได้ปกติ) ถ้ายังไม่เคยสร้าง release จริงบน GitHub ให้เปลี่ยนไปชี้ที่อื่นที่แจกไฟล์จริงได้ก่อน (เช่น Drive) จนกว่าจะตั้ง GitHub Release เสร็จ
+`url` ในไฟล์ตอนนี้ชี้ไปที่[โฟลเดอร์แจกไฟล์บน SharePoint/OneDrive ของ Betimes](https://betimessolutions-my.sharepoint.com/:f:/g/personal/sitthiphong_k_betimes_biz/IgBGT0LvmkD2RoRLIEiEtGBgAZAjyRQy2wHFhYGf4QoapIM?e=NXPpVe) — อัปโหลด `dist/mac/STPTunnel-<version>.zip` และ `dist/win/STPTunnel-<version>.zip` (ตัว .zip เท่านั้น ห้ามลากโฟลเดอร์ .app ขึ้นไปตรงๆ) ขึ้นโฟลเดอร์นี้**ก่อน** sync gist ทุกครั้ง ไม่งั้นเพื่อนจะเห็นแจ้งเตือนแต่ไม่มีไฟล์ให้โหลด
 
 ถ้าลบ/ล้างค่า `updateFeedURL` ให้ว่าง ฟีเจอร์นี้จะไม่ทำงานเฉยๆ ไม่ error
 
