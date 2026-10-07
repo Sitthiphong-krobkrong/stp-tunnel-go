@@ -2,7 +2,7 @@
 
 `stp-tunnel` · part of the **STP Tools** family
 
-**เวอร์ชัน:** 1.0.0 · **อัปเดตล่าสุด:** 2026-09-17 · **ผู้พัฒนา:** stp · [CHANGELOG](CHANGELOG.md)
+**เวอร์ชัน:** 1.2.0 · **อัปเดตล่าสุด:** 2026-10-07 · **ผู้พัฒนา:** stp · [CHANGELOG](CHANGELOG.md)
 
 A small desktop app for opening SSH port-forwards (tunnels) to internal servers — one window, a list of saved tunnels, start/stop with a click.
 

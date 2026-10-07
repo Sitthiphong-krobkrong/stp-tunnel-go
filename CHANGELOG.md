@@ -10,10 +10,13 @@
 
 | Version | วันที่ | สรุป |
 |---|---|---|
+| 1.2.0 | 2026-10-07 | Export/Import เลือกได้ราย project (+ ตั้งชื่อใหม่เมื่อชื่อ project ชนกัน), คู่มือ Getting started 8 ขั้นด้วยภาพหน้าจอจริงเด้งตอนเปิดแอปครั้งแรก, ภาพ diagram ใน README |
 | 1.1.0 | 2026-09-18 | ปุ่ม Test connection ก่อนใช้จริง, macOS build เป็น universal binary (arm64+amd64) + zip ด้วย `ditto` อัตโนมัติ (แก้ปัญหาเปิดไม่ได้บน Intel Mac และตอนอัปขึ้น Google Drive), เปิดใช้ check-for-updates จริง, เมนู (⋮) สำหรับ diagnostics/update, ยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ |
 | 1.0.0 | 2026-09-17 | เวอร์ชันแรก — tunnel manager ครบชุด, system tray menu, คอลัมน์ Latency, ไอคอนแอปใหม่ |
 
 ## [Unreleased]
+
+## [1.2.0] - 2026-10-07
 
 ### Added
 
