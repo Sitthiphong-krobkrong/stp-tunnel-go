@@ -4,7 +4,7 @@
 # app shows "Update Available" with a link straight to the new files.
 #
 #   ./publish.sh          → publish the version in VERSION
-#   ./publish.sh --yes    → skip the "did you upload?" question (files already up)
+#   ./publish.sh --yes    → skip the "did you upload?" question (folder already up)
 #
 # Order matters: the feed is only switched AFTER the zips are in the shared
 # folder — the moment the gist changes, teammates get the notification, and
@@ -27,8 +27,7 @@ gh auth status >/dev/null 2>&1 || die "gh ยังไม่ได้ login — 
 VERSION="$(tr -d '[:space:]' < VERSION)"
 FEED_VERSION="$(jq -r .version latest.json)"
 SHARE_URL="$(jq -r .url latest.json)"
-MAC_ZIP="dist/mac/${APP_NAME}-${VERSION}.zip"
-WIN_ZIP="dist/win/${APP_NAME}-${VERSION}.zip"
+RELEASE_DIR="dist/${VERSION}"
 
 echo "Publish ${APP_NAME} ${VERSION}"
 echo
@@ -38,9 +37,11 @@ echo
 [ "${FEED_VERSION}" == "${VERSION}" ] ||
   die "latest.json บอก ${FEED_VERSION} แต่ VERSION คือ ${VERSION} — รัน ./build.sh all ก่อน (มัน sync ให้)"
 
-for zip in "${MAC_ZIP}" "${WIN_ZIP}"; do
-  [ -f "${zip}" ] || die "ไม่เจอ ${zip} — รัน ./build.sh all ก่อน"
+for f in "${APP_NAME}-${VERSION}-mac.zip" "${APP_NAME}-${VERSION}-win.zip" RELEASE-NOTES.txt SHA256SUMS.txt; do
+  [ -f "${RELEASE_DIR}/${f}" ] || die "ไม่เจอ ${RELEASE_DIR}/${f} — รัน ./build.sh all ก่อน"
 done
+(cd "${RELEASE_DIR}" && shasum -a 256 -c SHA256SUMS.txt >/dev/null) ||
+  die "zip ใน ${RELEASE_DIR} ไม่ตรงกับ SHA256SUMS.txt — build ใหม่ด้วย ./build.sh all"
 
 LIVE_VERSION="$(gh api "gists/${GIST_ID}" --jq '.files["latest.json"].content' | jq -r .version)"
 if [ "${LIVE_VERSION}" == "${VERSION}" ]; then
@@ -63,16 +64,15 @@ echo
 if [ "${ASSUME_YES}" != "--yes" ]; then
   [ -t 0 ] || die "ต้องรันใน terminal (หรือใส่ --yes ถ้าอัปโหลดไฟล์แล้ว)"
 
-  echo "ขั้นที่ 1: อัปโหลดไฟล์พวกนี้ขึ้นโฟลเดอร์แชร์ (ตัว .zip เท่านั้น ห้ามลากโฟลเดอร์ .app):"
-  echo "    ${MAC_ZIP}   (+ dist/mac/GUIDE.md)"
-  echo "    ${WIN_ZIP}   (+ dist/win/GUIDE.md)"
+  echo "ขั้นที่ 1: ลากทั้งโฟลเดอร์ ${VERSION} ขึ้นโฟลเดอร์แชร์ ข้างในมี:"
+  ls -1 "${RELEASE_DIR}" | sed 's/^/    /'
   echo
-  echo "→ เปิด Finder ที่ dist/ กับโฟลเดอร์แชร์ใน browser ให้แล้ว ลากไฟล์ข้ามไปได้เลย"
-  open dist 2>/dev/null || true
+  echo "→ เปิด Finder ที่ dist/ (เลือกโฟลเดอร์ ${VERSION} ไว้ให้) กับโฟลเดอร์แชร์ใน browser แล้ว ลากข้ามไปได้เลย"
+  open -R "${RELEASE_DIR}" 2>/dev/null || true
   open "${SHARE_URL}" 2>/dev/null || true
   echo
 
-  read -r -p "อัปโหลดครบทั้ง mac และ win แล้ว? [y/N] " ANSWER
+  read -r -p "อัปโหลดโฟลเดอร์ ${VERSION} ครบแล้ว? [y/N] " ANSWER
   [[ "${ANSWER}" =~ ^[Yy] ]] || die "ยกเลิก — ยังไม่มีใครได้แจ้งเตือน รันใหม่เมื่ออัปโหลดเสร็จ"
 fi
 

@@ -85,7 +85,7 @@ A small desktop app for opening SSH port-forwards (tunnels) to internal servers 
 
 ## สำหรับผู้ใช้งาน
 
-> ส่วนนี้มีฉบับย่อแยกตาม OS ไว้ที่ [GUIDE-macOS.md](GUIDE-macOS.md) และ [GUIDE-Windows.md](GUIDE-Windows.md) ด้วย — `./build.sh all` จะก็อปไฟล์ที่ตรง OS ใส่ไปเป็น `GUIDE.md` ใน `dist/mac/` และ `dist/win/` ให้อัตโนมัติทุกครั้ง (ผู้ใช้แต่ละฝั่งเห็นแค่คู่มือของ OS ตัวเอง ไม่ปนกัน) เอาไปแจกทีมได้เลยไม่ต้องทำอะไรเพิ่ม
+> ส่วนนี้มีฉบับย่อแยกตาม OS ไว้ที่ [GUIDE-macOS.md](GUIDE-macOS.md) และ [GUIDE-Windows.md](GUIDE-Windows.md) ด้วย — `./build.sh all` จะก็อปทั้งสองไฟล์ใส่โฟลเดอร์แจก `dist/<version>/` ให้อัตโนมัติทุกครั้ง เอาไปแจกทีมได้เลยไม่ต้องทำอะไรเพิ่ม
 
 ### ติดตั้ง
 
@@ -296,14 +296,30 @@ go install github.com/fyne-io/fyne-cross@latest
 
 ### ปล่อยอัปเดตให้ทีม (ทุกรอบ)
 
+ก่อนอื่นเขียน entry ของเวอร์ชันใหม่ใน [CHANGELOG.md](CHANGELOG.md) — หัวข้อ Added / Changed / Fixed คือ release notes ที่ทีมเห็น (ดู "เขียน entry ยังไง" ในไฟล์นั้น) ถ้าไม่มี `./build.sh all` จะหยุดไม่ยอม build
+
+`./build.sh all` ส่งออกทุกอย่างที่แจกไว้ในโฟลเดอร์เดียว:
+
+```
+dist/1.2.0/
+├── STPTunnel-1.2.0-mac.zip    ← STPTunnel.app + RELEASE-NOTES.txt
+├── STPTunnel-1.2.0-win.zip    ← STPTunnel.exe + RELEASE-NOTES.txt
+├── RELEASE-NOTES.txt          ← มีอะไรใหม่ + วิธีติดตั้ง + checksum
+├── GUIDE-macOS.md
+├── GUIDE-Windows.md
+└── SHA256SUMS.txt
+```
+
+บนโฟลเดอร์แชร์ให้เก็บแยกโฟลเดอร์ตามเวอร์ชัน (`1.2.0/`, `1.3.0/`, ...) ไม่ลบของเก่า — ถ้าเวอร์ชันใหม่มีปัญหา ทีมย้อนกลับไปโหลดตัวเก่าได้
+
 ```bash
-./build.sh all     # 1. build (มัน sync version ลง latest.json ให้) — แก้ notes ใน latest.json ให้ตรงรอบนี้ด้วย
+./build.sh all     # 1. build → dist/<version>/ (release notes ดึงจาก CHANGELOG.md ให้เอง)
 ./publish.sh       # 2. อัปโหลด + แจ้งเตือนทีม
 ```
 
 `./publish.sh` ทำตามลำดับนี้ให้:
 
-1. เช็คว่า VERSION, `latest.json` และ zip ใน `dist/mac` + `dist/win` ตรงกัน และบอกว่าตอนนี้ทีมเห็นเวอร์ชันไหนอยู่ (ถ้าปล่อยไปแล้วก็จบเลย ไม่ทำซ้ำ)
+1. เช็คว่า VERSION, `latest.json` และไฟล์ใน `dist/<version>/` ตรงกัน (รวม checksum) และบอกว่าตอนนี้ทีมเห็นเวอร์ชันไหนอยู่ (ถ้าปล่อยไปแล้วก็จบเลย ไม่ทำซ้ำ)
 2. โชว์ข้อความ `notes` ที่ทีมจะเห็นใน dialog
 3. เปิด Finder ที่ `dist/` กับโฟลเดอร์แชร์ใน browser ให้ลากไฟล์ขึ้นไป แล้ว**รอให้ตอบ y ว่าอัปโหลดแล้ว**
 4. ค่อยอัปเดต gist แล้วเช็คว่าขึ้นจริง — นาทีนี้แหละที่ทีมเริ่มเห็นแจ้งเตือน
@@ -316,7 +332,7 @@ URL ที่แอปเรียกไม่เปลี่ยนเลย เ
 
 แอปจะเช็คตอนเปิด (เงียบๆ ไม่กวนถ้าไม่มีอะไรใหม่) และเช็คได้เองผ่านเมนู **Help → Check for updates** หรือไอคอน ⋮ มุมขวาบน — เจอเวอร์ชันใหม่แล้วจะเด้ง dialog พร้อมปุ่มลิงก์ (จาก `url` ในไฟล์) ให้กดไปโหลดเอง **ไม่ใช่ auto-download/ติดตั้งอัตโนมัติ**
 
-`url` ในไฟล์ตอนนี้ชี้ไปที่[โฟลเดอร์แจกไฟล์บน SharePoint/OneDrive ของ Betimes](https://betimessolutions-my.sharepoint.com/:f:/g/personal/sitthiphong_k_betimes_biz/IgBGT0LvmkD2RoRLIEiEtGBgAZAjyRQy2wHFhYGf4QoapIM?e=NXPpVe) — อัปโหลด `dist/mac/STPTunnel-<version>.zip` และ `dist/win/STPTunnel-<version>.zip` (ตัว .zip เท่านั้น ห้ามลากโฟลเดอร์ .app ขึ้นไปตรงๆ) ขึ้นโฟลเดอร์นี้**ก่อน** sync gist ทุกครั้ง ไม่งั้นเพื่อนจะเห็นแจ้งเตือนแต่ไม่มีไฟล์ให้โหลด
+`url` ในไฟล์ตอนนี้ชี้ไปที่[โฟลเดอร์แจกไฟล์บน SharePoint/OneDrive ของ Betimes](https://betimessolutions-my.sharepoint.com/:f:/g/personal/sitthiphong_k_betimes_biz/IgBGT0LvmkD2RoRLIEiEtGBgAZAjyRQy2wHFhYGf4QoapIM?e=NXPpVe) — ลากทั้งโฟลเดอร์ `dist/<version>/` ขึ้นโฟลเดอร์นี้ (ห้ามลากโฟลเดอร์ .app ขึ้นไปตรงๆ) **ก่อน** sync gist ทุกครั้ง ไม่งั้นเพื่อนจะเห็นแจ้งเตือนแต่ไม่มีไฟล์ให้โหลด
 
 ถ้าลบ/ล้างค่า `updateFeedURL` ให้ว่าง ฟีเจอร์นี้จะไม่ทำงานเฉยๆ ไม่ error
 

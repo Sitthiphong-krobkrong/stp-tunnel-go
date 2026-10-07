@@ -4,6 +4,12 @@
 
 อัปเดตไฟล์นี้พร้อมกับตอนที่ bump `VERSION` ใน [build.sh](build.sh) ทุกครั้งที่แจกรอบใหม่ — ดูหัวข้อ "Build สำหรับแจกจ่าย" ใน [README.md](README.md)
 
+## เขียน entry ยังไง
+
+หัวข้อ **Added / Changed / Fixed / Security / Known issues** คือสิ่งที่ผู้ใช้เห็น — `./build.sh all` ดึงไปทำเป็น `RELEASE-NOTES.txt` ที่แจกคู่กับไฟล์ zip และข้อความใน dialog "Update Available" ของแอป ([tools/relnotes](tools/relnotes/main.go)) เขียนให้คนใช้แอปอ่านรู้เรื่อง: ทำอะไรได้ใหม่ / อะไรเปลี่ยน / อะไรหายพัง สั้นๆ ไม่ใส่ชื่อไฟล์ ชื่อฟังก์ชัน หรือ path
+
+รายละเอียดฝั่ง dev (ไฟล์ไหน ทำไม วิธีทดสอบ) ใส่ใน **Internal** — ไม่ออกไปถึงผู้ใช้
+
 ## สรุป release
 
 เพิ่มแถวใหม่ไว้บนสุดทุกครั้งที่ bump version — รายละเอียดเต็มของแต่ละเวอร์ชันอยู่ด้านล่าง
@@ -16,24 +22,25 @@
 
 ## [Unreleased]
 
-### Added
-
-- `./publish.sh` — ปล่อยอัปเดตให้ทีมในคำสั่งเดียว: เช็คว่า VERSION / latest.json / zip ตรงกัน, เปิดโฟลเดอร์ dist กับโฟลเดอร์แชร์ให้ลากไฟล์, รอยืนยันว่าอัปโหลดแล้ว จึงค่อย sync gist (ทีมไม่เจอแจ้งเตือนที่โหลดไม่ได้)
-
 ## [1.2.0] - 2026-10-07
 
 ### Added
 
-- คู่มือ **Getting started** เด้งขึ้นมาเองตอนเปิดแอปครั้งแรก — 8 ขั้นตอน ทีละหน้า (ข้าม / ย้อนกลับ / ถัดไป) แต่ละหน้าเป็นภาพหน้าจอจริงของแอปพร้อมกรอบแดงรอบปุ่มที่ต้องกด: สร้าง Project → กรอก bastion + Test → Add tunnel → ใส่ port → ติ๊ก + Start → ใส่รหัสผ่าน → ใช้งาน (RUNNING / ERROR / LOG) → Export ให้ทีม ถ้ายังไม่มี project หน้าสุดท้ายมีปุ่ม New Project / Import setup... ให้กดเริ่มได้ทันที เปิดดูซ้ำได้ที่ Help > Getting started หรือปุ่ม (⋮) มุมขวาบน — จำว่าเคยดูแล้วด้วยไฟล์ `guide-seen` ข้าง `config.json` (ลบไฟล์นี้ถ้าอยากให้เด้งอีกครั้ง) ภาพหน้าจออยู่ใน [docs/guide/](docs/guide/) สร้างใหม่ได้ด้วย `go test -tags screenshots -run TestGuideScreenshots .`
-- ภาพประกอบใน README: ภาพรวมแอป, เกิดอะไรขึ้นตอนกด Start, สถานะของ tunnel (ไฟล์ต้นฉบับอยู่ใน [docs/architecture/](docs/architecture/))
-
-### Changed
-
-- Export/Import setup เลือกได้ราย project — **Export** มีหน้าต่างให้ติ๊ก project ที่จะแชร์ (ค่าเริ่มต้นคือ project ที่เปิดอยู่ มี "Select all") และตั้งชื่อไฟล์ตาม project ให้ เช่น `stp-tunnel-eec-prod.json` เดิม export ทุก project ที่มีไปทีเดียว **Import** ถ้าในไฟล์มีหลาย project จะให้ติ๊กเลือกว่าจะเอาอันไหน พร้อมบอกว่าแต่ละอัน "new" / "already here, adds N new tunnel(s)" / "already here" และหลัง import จะสลับไปที่ project ที่เพิ่ง import ให้เลย
+- คู่มือ Getting started เด้งขึ้นมาตอนเปิดแอปครั้งแรก — 8 ขั้นตอนพร้อมภาพหน้าจอจริงและกรอบแดงบอกว่าต้องกดตรงไหน เปิดดูซ้ำได้ที่ Help > Getting started หรือปุ่ม ⋮ มุมขวาบน
+- Export setup เลือกได้ว่าจะแชร์ project ไหน (ค่าเริ่มต้นคือ project ที่เปิดอยู่) และตั้งชื่อไฟล์ตามชื่อ project ให้
+- Import setup ถ้าในไฟล์มีหลาย project เลือกได้ว่าจะเอาอันไหน บอกด้วยว่าอันไหนใหม่ / มีอยู่แล้ว / มี tunnel ใหม่เพิ่ม และสลับไปที่ project ที่เพิ่ง import ให้ทันที
 
 ### Fixed
 
-- Import project ที่ชื่อซ้ำกับ project ที่มีอยู่แล้ว (คนละ ID) เดิมทำให้ dropdown Project มีชื่อซ้ำสองอัน เลือกแล้วไปโดนอีกอันแทน ตอนนี้ตั้งชื่อใหม่เป็น `ชื่อ (2)` ให้อัตโนมัติ
+- Import project ที่ชื่อซ้ำกับ project ที่มีอยู่แล้ว (แต่เป็นคนละอัน) เดิมทำให้รายการ Project มีชื่อซ้ำสองอันและเลือกผิดอันได้ ตอนนี้ตั้งชื่อใหม่เป็น "ชื่อ (2)" ให้อัตโนมัติ
+
+### Internal
+
+- คู่มือจำว่าเคยดูแล้วด้วยไฟล์ `guide-seen` ข้าง `config.json` (Fyne Preferences ไม่บันทึกลงดิสก์ถ้าไม่มี app ID เช่นตอน `go run`) ภาพหน้าจอใน [docs/guide/](docs/guide/) สร้างจาก UI จริงด้วย `go test -tags screenshots -run TestGuideScreenshots .`
+- ภาพ diagram ใน README (ภาพรวม / ตอนกด Start / สถานะ tunnel) ต้นฉบับ `.json` อยู่ใน [docs/architecture/](docs/architecture/)
+- `./publish.sh` — ปล่อยอัปเดตให้ทีม: เช็คว่าไฟล์ครบ, เปิดโฟลเดอร์ให้ลากขึ้นโฟลเดอร์แชร์, รอยืนยันว่าอัปโหลดแล้วจึงค่อย sync gist
+- Release notes สร้างจาก CHANGELOG อัตโนมัติ ([tools/relnotes](tools/relnotes/main.go)) — `RELEASE-NOTES.txt` และ `notes` ใน `latest.json` ใช้เฉพาะหัวข้อ Added / Changed / Fixed / Security / Known issues ส่วน Internal ไม่ออกไปถึงผู้ใช้ และ `./build.sh all` จะหยุดถ้าเวอร์ชันนั้นไม่มี release notes
+- `./build.sh all` ส่งออกเป็นโฟลเดอร์เดียวต่อเวอร์ชัน `dist/<version>/` (zip ของ mac/win ชื่อไม่ชนกันแล้ว + RELEASE-NOTES.txt + GUIDE ทั้งสอง OS + SHA256SUMS.txt) ลากทั้งโฟลเดอร์ขึ้นโฟลเดอร์แชร์ได้เลย
 
 ## [1.1.0] - 2026-09-18
 

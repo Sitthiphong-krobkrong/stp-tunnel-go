@@ -78,7 +78,7 @@ fi
 # Keep latest.json's version field from silently drifting behind VERSION —
 # this is exactly the "forgot to update it" trap README.md warns about
 # (teammates press Check for updates and see nothing new). Only the version
-# field is mechanical; "notes" still needs a human describing what changed.
+# field is mechanical here; "notes" is filled from CHANGELOG.md further down.
 echo "→ syncing version into latest.json"
 jq --arg v "${VERSION}" '.version = $v' latest.json > latest.json.tmp && mv latest.json.tmp latest.json
 
@@ -107,6 +107,23 @@ if [ -t 0 ]; then
   fi
 fi
 
+# Release notes come from CHANGELOG.md's [VERSION] section (user-facing
+# subsections only — see tools/relnotes). Generated before the slow build so
+# a release with no notes stops here, not after ten minutes of compiling.
+# Everything handed out lands in one folder per version, dragged to the
+# shared folder as-is.
+DIST_DIR="dist"
+RELEASE_DIR="${DIST_DIR}/${VERSION}"
+rm -rf "${RELEASE_DIR}"
+mkdir -p "${RELEASE_DIR}"
+echo "→ release notes from CHANGELOG.md [${VERSION}]"
+if ! go run ./tools/relnotes -version "${VERSION}" -format txt > "${RELEASE_DIR}/RELEASE-NOTES.txt"; then
+  echo "   เขียน release notes ของ ${VERSION} ใน CHANGELOG.md ก่อน (หัวข้อ Added / Changed / Fixed)" >&2
+  exit 1
+fi
+SHORT_NOTES="$(go run ./tools/relnotes -version "${VERSION}" -format notes)"
+jq --arg n "${SHORT_NOTES}" '.notes = $n' latest.json > latest.json.tmp && mv latest.json.tmp latest.json
+
 # `fyne package` and `fyne-cross` have no working way to pass "-X pkg.var=val"
 # through to the linker — fyne-cross splits -ldflags on whitespace and
 # re-emits each piece as its own GOFLAGS entry (internal/command/context.go),
@@ -125,10 +142,8 @@ sed -i '' \
 # Everything actually handed out to teammates lands here, one subfolder per
 # platform, instead of scattered between the project root and fyne-cross's
 # own bin/dist/tmp tree.
-DIST_DIR="dist"
 MAC_DIR="${DIST_DIR}/mac"
-WIN_DIR="${DIST_DIR}/win"
-mkdir -p "${MAC_DIR}" "${WIN_DIR}"
+mkdir -p "${MAC_DIR}"
 
 echo "→ macOS app bundle (universal: arm64 + amd64)"
 rm -rf "${APP_NAME}.app" "${MAC_DIR}/${APP_NAME}.app"
@@ -176,7 +191,6 @@ rm -f "${OTHER_BIN}"
 codesign --force --deep -s "${SIGN_IDENTITY}" "${APP_NAME}.app"
 
 mv "${APP_NAME}.app" "${MAC_DIR}/"
-cp GUIDE-macOS.md "${MAC_DIR}/GUIDE.md"
 
 # Hand out a real zip, not the loose .app folder. A .app *is* a folder, so
 # dragging it straight into Google Drive/Slack/etc. without zipping first
@@ -185,7 +199,13 @@ cp GUIDE-macOS.md "${MAC_DIR}/GUIDE.md"
 # Contents/MacOS, so teammates get "can't be opened" no matter their CPU.
 # `ditto` is what Finder's own "Compress" uses, so it round-trips Unix
 # permissions and resource forks correctly, unlike a plain `zip`.
-ditto -c -k --keepParent "${MAC_DIR}/${APP_NAME}.app" "${MAC_DIR}/${APP_NAME}-${VERSION}.zip"
+# The zip holds the .app plus RELEASE-NOTES.txt, so a zip forwarded on its
+# own still says what it is.
+MAC_STAGE="$(mktemp -d)"
+ditto --norsrc --noextattr --noacl "${MAC_DIR}/${APP_NAME}.app" "${MAC_STAGE}/${APP_NAME}.app"
+cp "${RELEASE_DIR}/RELEASE-NOTES.txt" "${MAC_STAGE}/"
+ditto -c -k --norsrc --noextattr --noacl "${MAC_STAGE}" "${RELEASE_DIR}/${APP_NAME}-${VERSION}-mac.zip"
+rm -rf "${MAC_STAGE}"
 
 echo "→ Windows executable (via Docker)"
 if ! docker ps >/dev/null 2>&1; then
@@ -194,18 +214,29 @@ if ! docker ps >/dev/null 2>&1; then
 fi
 fyne-cross windows -arch=amd64 -icon icon.png -app-id "${APP_ID}" -name "${APP_NAME}" \
   -app-version "${VERSION}"
-cp "fyne-cross/dist/windows-amd64/${APP_NAME}.zip" "${WIN_DIR}/${APP_NAME}-${VERSION}.zip"
-cp GUIDE-Windows.md "${WIN_DIR}/GUIDE.md"
+WIN_STAGE="$(mktemp -d)"
+unzip -q "fyne-cross/dist/windows-amd64/${APP_NAME}.zip" -d "${WIN_STAGE}"
+cp "${RELEASE_DIR}/RELEASE-NOTES.txt" "${WIN_STAGE}/"
+WIN_ZIP="$(pwd)/${RELEASE_DIR}/${APP_NAME}-${VERSION}-win.zip"
+(cd "${WIN_STAGE}" && zip -q -X -r "${WIN_ZIP}" .)
+rm -rf "${WIN_STAGE}"
+
+# Guides for both platforms + checksums, so anyone can confirm a download
+# arrived intact (shasum -a 256 -c SHA256SUMS.txt / certutil on Windows).
+cp GUIDE-macOS.md GUIDE-Windows.md "${RELEASE_DIR}/"
+(cd "${RELEASE_DIR}" && shasum -a 256 ./*.zip | sed 's#  \./#  #' > SHA256SUMS.txt)
+{
+  echo
+  echo "ตรวจสอบไฟล์ (SHA-256)"
+  sed 's/^/  /' "${RELEASE_DIR}/SHA256SUMS.txt"
+} >> "${RELEASE_DIR}/RELEASE-NOTES.txt"
 
 echo
-echo "Ready to hand out — upload the .zip file itself (never the raw .app folder:"
-echo "Google Drive/Slack/etc. silently re-zip a dragged-in folder on download and"
-echo "that strips the executable bit, so the app then fails to open for everyone):"
-echo "  ${MAC_DIR}/  (${APP_NAME}-${VERSION}.zip + GUIDE.md)"
-echo "  ${WIN_DIR}/  (${APP_NAME}-${VERSION}.zip + GUIDE.md)"
+echo "พร้อมแจก — ลากทั้งโฟลเดอร์ ${RELEASE_DIR}/ ขึ้นโฟลเดอร์แชร์ (ห้ามลาก .app เปล่าๆ:"
+echo "บริการแชร์ไฟล์จะ zip ใหม่ตอนดาวน์โหลดแล้ว permission หาย เปิดแอปไม่ได้):"
+ls -1 "${RELEASE_DIR}" | sed 's/^/  /'
 echo
-echo "ขั้นที่เหลือ ทำเองทีละขั้น (ไม่ auto เพราะกระทบ git remote / public gist):"
-echo "  1. เช็ค CHANGELOG.md ว่าเนื้อหาครบและมีแถวใน \"สรุป release\" แล้ว"
-echo "  2. git add -A && git commit -m \"release v${VERSION}\""
-echo "  3. git tag v${VERSION} && git push && git push --tags"
-echo "  4. ./publish.sh — อัปโหลด zip ขึ้นโฟลเดอร์แชร์ แล้วสลับ gist ให้ทีมเห็นแจ้งเตือน"
+echo "ขั้นที่เหลือ:"
+echo "  1. git add -A && git commit -m \"chore: release ${VERSION}\" (latest.json ได้ notes ใหม่จาก CHANGELOG)"
+echo "  2. git tag -a v${VERSION} -m \"STP Tunnel ${VERSION}\" && git push && git push --tags"
+echo "  3. ./publish.sh — อัปโหลดโฟลเดอร์ ${RELEASE_DIR}/ แล้วสลับ gist ให้ทีมเห็นแจ้งเตือน"
