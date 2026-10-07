@@ -55,8 +55,14 @@ if [ -n "$(git status --porcelain -- latest.json VERSION CHANGELOG.md)" ]; then
 fi
 
 echo "ตอนนี้ทีมเห็น ${LIVE_VERSION} → จะเปลี่ยนเป็น ${VERSION}"
+# Notes for the dialog: everything since what the team has right now (it may
+# differ from build time), straight from CHANGELOG.md.
+command -v go >/dev/null || die "ต้องมี go (ใช้สร้าง release notes)"
+NOTES="$(go run ./tools/relnotes -version "${VERSION}" -since "${LIVE_VERSION}" -format notes)" ||
+  die "สร้าง release notes ไม่ได้ — เช็ค CHANGELOG.md [${VERSION}]"
+FEED_JSON="$(jq --arg n "${NOTES}" '.notes = $n' latest.json)"
 echo "ข้อความที่ทีมจะเห็นใน dialog \"Update Available\":"
-jq -r .notes latest.json | sed 's/^/    /'
+printf '%s\n' "${NOTES}" | sed 's/^/    /'
 echo
 
 # ---------- 2. upload: the one step that has to be done by hand ----------
@@ -80,7 +86,7 @@ fi
 
 echo
 echo "ขั้นที่ 2: อัปเดต gist ที่แอปของทุกคนเช็ค"
-jq -n --rawfile content latest.json '{files: {"latest.json": {content: $content}}}' |
+jq -n --arg content "${FEED_JSON}" '{files: {"latest.json": {content: $content}}}' |
   gh api "gists/${GIST_ID}" --method PATCH --input - >/dev/null
 
 LIVE_VERSION="$(gh api "gists/${GIST_ID}" --jq '.files["latest.json"].content' | jq -r .version)"

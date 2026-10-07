@@ -116,12 +116,21 @@ DIST_DIR="dist"
 RELEASE_DIR="${DIST_DIR}/${VERSION}"
 rm -rf "${RELEASE_DIR}"
 mkdir -p "${RELEASE_DIR}"
-echo "→ release notes from CHANGELOG.md [${VERSION}]"
-if ! go run ./tools/relnotes -version "${VERSION}" -format txt > "${RELEASE_DIR}/RELEASE-NOTES.txt"; then
+# Notes cover every version since the one teammates have now (what the live
+# update feed says), so someone jumping several versions reads all of it.
+# Offline → just this version.
+FEED_URL="$(sed -n 's/^const updateFeedURL = "\(.*\)"$/\1/p' release.go)"
+LIVE_VERSION="$(curl -fsS --max-time 8 "${FEED_URL}" 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)"
+SINCE_ARGS=()
+if [ -n "${LIVE_VERSION}" ] && [ "${LIVE_VERSION}" != "${VERSION}" ]; then
+  SINCE_ARGS=(-since "${LIVE_VERSION}")
+fi
+echo "→ release notes from CHANGELOG.md [${VERSION}]${LIVE_VERSION:+ (ทีมใช้ ${LIVE_VERSION} อยู่ — รวมทุกเวอร์ชันหลังจากนั้น)}"
+if ! go run ./tools/relnotes -version "${VERSION}" "${SINCE_ARGS[@]}" -format txt > "${RELEASE_DIR}/RELEASE-NOTES.txt"; then
   echo "   เขียน release notes ของ ${VERSION} ใน CHANGELOG.md ก่อน (หัวข้อ Added / Changed / Fixed)" >&2
   exit 1
 fi
-SHORT_NOTES="$(go run ./tools/relnotes -version "${VERSION}" -format notes)"
+SHORT_NOTES="$(go run ./tools/relnotes -version "${VERSION}" "${SINCE_ARGS[@]}" -format notes)"
 jq --arg n "${SHORT_NOTES}" '.notes = $n' latest.json > latest.json.tmp && mv latest.json.tmp latest.json
 
 # `fyne package` and `fyne-cross` have no working way to pass "-X pkg.var=val"

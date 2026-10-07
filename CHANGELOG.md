@@ -58,15 +58,30 @@
 
 ### Added
 
+- ปุ่ม Test connection ในหน้า New/Edit Project — ลองต่อ SSH ด้วยค่าที่กรอกได้ทันที ไม่ต้อง Save หรือสร้าง tunnel ก่อน
+- ปุ่ม ⋮ มุมขวาบน รวม Copy diagnostics และ Check for updates ไว้ให้กดง่าย
+- ถามยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่
+- Check for updates ใช้งานได้จริงแล้ว — มีเวอร์ชันใหม่จะเด้งบอกพร้อมลิงก์ไปโหลด
+
+### Fixed
+
+- Mac รุ่น Intel เปิดแอปได้แล้ว (เดิมเปิดได้แค่ Mac ชิป Apple)
+- แอปที่โหลดผ่าน Google Drive / แชท เปิดได้ตามปกติ (เดิมบางครั้งเปิดไม่ขึ้นหลังดาวน์โหลด)
+- แก้ Local port / Target ของ tunnel ที่กำลังรันอยู่ จะเตือนให้ Stop แล้ว Start ใหม่ (เดิมค่าใหม่ขึ้นในตารางแต่ยังวิ่งด้วยค่าเก่าเงียบๆ)
+- กด Stop แล้ว Start tunnel เดิมเร็วๆ ติดกัน บางครั้งสถานะเพี้ยนจน Stop ไม่ได้ — แก้แล้ว
+
+### Known issues
+
+- macOS: ไอคอนบน menu bar (system tray) ยังไม่แสดง เพราะบั๊กของ library ที่ใช้ — กด X ปิดหน้าต่างจึงเป็นการปิดแอป (หยุดทุก tunnel) ไม่ได้ซ่อนลง tray
+
+### Internal
+
 - [VERSION](VERSION) เป็น source of truth เดียวของเลขเวอร์ชัน — `./build.sh all` เช็ค commit ตั้งแต่ tag `v<เวอร์ชันปัจจุบัน>` อัตโนมัติ ถ้าเจอ prefix แบบ Conventional Commits (`feat:`/`fix:`/`BREAKING CHANGE`) จะถามก่อนว่าจะ bump เวอร์ชันให้ไหม (ดู "Build สำหรับแจกจ่าย" ใน [README.md](README.md))
 - เปิดใช้ "Check for updates" จริง — [latest.json](latest.json) ใหม่ + `updateFeedURL` ใน [release.go](release.go) ชี้ไปที่ public GitHub Gist ที่ sync มาจากไฟล์นั้น เดิมค่านี้ว่างเปล่าฟีเจอร์เลยไม่เคยทำงาน (ตอนแรกลองชี้ตรงไป raw.githubusercontent.com ของ repo นี้ แต่ repo private เลยโดน 404 เสมอ — ย้ายมาใช้ gist แทนเพราะ repo คงต้องเป็น private ต่อไป ดู "แจ้งเตือนเวอร์ชันใหม่" ใน [README.md](README.md))
 - เพิ่มไอคอนเมนู (⋮) มุมขวาบนของหน้าต่างหลัก กดแล้วเป็น dropdown "Copy diagnostics" / "Check for updates" — เดิมสองอันนี้อยู่แค่ในเมนู Help บนแถบเมนูระบบซึ่งพลาดง่าย
 - ถามยืนยันก่อนปิดแอปถ้ายังมี tunnel รันอยู่ ("N tunnel(s) are still running. Quitting will stop them all.") — ปิดแอปทันทีเหมือนเดิมถ้าไม่มี tunnel ไหนรันอยู่
 - [GUIDE-macOS.md](GUIDE-macOS.md) / [GUIDE-Windows.md](GUIDE-Windows.md) — คู่มือย่อสำหรับผู้ใช้ปลายทาง แยกไฟล์ตาม OS ไม่ปนกัน `build.sh all` ก็อปไฟล์ที่ตรง OS ใส่เป็น `GUIDE.md` ใน `dist/mac/` และ `dist/win/` ให้อัตโนมัติ แจกทีมได้โดยไม่ต้องทำอะไรเพิ่ม
 - ปุ่ม **"Test connection"** ใน New/Edit Project — ลองต่อ SSH ด้วยค่าที่กรอกในฟอร์ม (host/user/port/identity file/skip host key) ได้ทันทีโดยไม่ต้อง Save หรือไปสร้าง tunnel ก่อน ใช้ auth logic เดียวกับตอนกด Start (key file → password ที่จำไว้ → ถามรหัสผ่าน)
-
-### Fixed
-
 - แก้ tunnel ที่ RUNNING อยู่แล้วกด Edit เปลี่ยน Local port/Target host/Target port — เดิมค่าใหม่ขึ้นในตารางทันทีแต่ตัวท่อจริงยังวิ่งด้วยค่าเก่าเงียบๆ ไม่มีใครรู้ ตอนนี้เตือนให้ Stop/Start ใหม่ถ้าเปลี่ยนค่าพวกนี้ระหว่างที่ tunnel รันอยู่
 - แก้ race condition ใน `TunnelRuntime`: ถ้า Stop แล้ว Start tunnel เดิมเร็วมากๆ ติดกัน goroutine ที่เฝ้า session เก่าอาจไปลบ/รายงานว่า session **ใหม่** หลุดแทน ทำให้ tunnel ใหม่ที่ยังรันอยู่จริงถูกมองว่าเป็น orphan (Stop ไม่ได้, Start ใหม่ชน "address already in use")
 - แก้ binary ที่ build ด้วย `go build` เฉยๆ (ลืม `-ldflags`) เคยรายงานตัวเองว่า `1.0.0` เหมือน release จริงแบ่งแยกไม่ออก — ตอนนี้ fallback เป็น `dev` แทน
@@ -75,10 +90,7 @@
 - `build.sh` เดิม build .app ให้แค่ CPU ของเครื่องที่ build (arm64 บน Apple Silicon) — เครื่องทีมที่เป็น Intel Mac เปิดแอปไม่ได้เลย ("The application ... can't be opened") ตอนนี้ cross-build อีก arch แล้ว `lipo` รวมเป็น universal binary ก่อน re-sign
 - `build.sh` เดิมส่งมอบแค่โฟลเดอร์ `.app` เปล่าๆ ให้ไปจัดการเอง — ถ้าลากขึ้น Google Drive/Slack ตรงๆ โดยไม่ zip ก่อน บริการเหล่านั้นจะ auto-zip ให้ตอนดาวน์โหลดแล้วทำ Unix executable permission ของ binary ข้างในหาย เปิดไม่ได้ไม่ว่า CPU รุ่นไหน ตอนนี้ `build.sh` zip ด้วย `ditto` ให้เสร็จเป็น `STPTunnel-<version>.zip` พร้อมแจกทันที
 - [GUIDE-macOS.md](GUIDE-macOS.md) เพิ่มขั้นตอนสำหรับ dialog "Apple could not verify ... is free of malware" (ไม่มีปุ่ม Open Anyway ให้กดตรงๆ) ที่เจอใน macOS รุ่นใหม่ๆ เช่น Sonoma/Sequoia — ต้องไป System Settings → Privacy & Security แทน
-
-### Known issues
-
-- **System tray icon ไม่โชว์บน macOS** — `fyne.io/systray` เวอร์ชันที่ Fyne v2.8.1 บังคับใช้มีบั๊ก: status item ลงทะเบียนกับ Control Center สำเร็จ แต่ไอคอนไม่ถูก apply เลยมองไม่เห็น (upstream: [fyne-io/fyne#4548](https://github.com/fyne-io/fyne/issues/4548)) เมนู tray (Show/Stop all/Quit) ยังอยู่ในโค้ดเผื่อแก้ได้ในอนาคต แต่**ปิดพฤติกรรม "กด X แล้วซ่อนลง tray" ไว้ก่อน** — ถ้าเปิดทั้งที่ไอคอนมองไม่เห็น ผู้ใช้จะกด X แล้วแอปหายไปเลย เรียกกลับไม่ได้นอกจาก Force Quit ตอนนี้กด X = quit ปกติเหมือนเดิม
+- Known issue (รายละเอียด): **System tray icon ไม่โชว์บน macOS** — `fyne.io/systray` เวอร์ชันที่ Fyne v2.8.1 บังคับใช้มีบั๊ก: status item ลงทะเบียนกับ Control Center สำเร็จ แต่ไอคอนไม่ถูก apply เลยมองไม่เห็น (upstream: [fyne-io/fyne#4548](https://github.com/fyne-io/fyne/issues/4548)) เมนู tray (Show/Stop all/Quit) ยังอยู่ในโค้ดเผื่อแก้ได้ในอนาคต แต่**ปิดพฤติกรรม "กด X แล้วซ่อนลง tray" ไว้ก่อน** — ถ้าเปิดทั้งที่ไอคอนมองไม่เห็น ผู้ใช้จะกด X แล้วแอปหายไปเลย เรียกกลับไม่ได้นอกจาก Force Quit ตอนนี้กด X = quit ปกติเหมือนเดิม
 
 ## [1.0.0] - 2026-09-17
 

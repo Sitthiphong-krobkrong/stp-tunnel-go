@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.2.1",
   "url": "https://betimessolutions-my.sharepoint.com/:f:/g/personal/sitthiphong_k_betimes_biz/IgBGT0LvmkD2RoRLIEiEtGBgAZAjyRQy2wHFhYGf4QoapIM?e=NXPpVe",
-  "notes": "• คู่มือ Getting started เด้งขึ้นมาตอนเปิดแอปครั้งแรก — 8 ขั้นตอนพร้อมภาพหน้าจอจริงและกรอบแดงบอกว่าต้องกดตรงไหน เปิดดูซ้ำได้ที่ Help > Getting started หรือปุ่ม ⋮ มุมขวาบน\n• Export setup เลือกได้ว่าจะแชร์ project ไหน (ค่าเริ่มต้นคือ project ที่เปิดอยู่) และตั้งชื่อไฟล์ตามชื่อ project ให้\n• Import setup ถ้าในไฟล์มีหลาย project เลือกได้ว่าจะเอาอันไหน บอกด้วยว่าอันไหนใหม่ / มีอยู่แล้ว / มี tunnel ใหม่เพิ่ม และสลับไปที่ project ที่เพิ่ง import ให้ทันที\n• Import project ที่ชื่อซ้ำกับ project ที่มีอยู่แล้ว (แต่เป็นคนละอัน) เดิมทำให้รายการ Project มีชื่อซ้ำสองอันและเลือกผิดอันได้ ตอนนี้ตั้งชื่อใหม่เป็น \"ชื่อ (2)\" ให้อัตโนมัติ"
+  "notes": "• ตัวอักษรไทยในแอปหน้าตาเหมือนกันทั้ง Mac และ Windows และตัวหนาภาษาไทย (หัวข้อ, ปุ่ม) เป็นตัวหนาจริงแล้ว — เดิมไทยบางกว่าอังกฤษที่อยู่ข้างกัน"
 }

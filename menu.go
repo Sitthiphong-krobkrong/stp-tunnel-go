@@ -299,9 +299,13 @@ func (a *App) showUpdateAvailable(latest *releaseInfo) {
 		widget.NewLabel(fmt.Sprintf("Version %s is available (you have %s).", latest.Version, version)),
 	)
 	if latest.Notes != "" {
+		// Notes can span several versions for someone a few releases behind,
+		// so they scroll instead of growing the dialog past the window.
 		notes := widget.NewLabel(latest.Notes)
 		notes.Wrapping = fyne.TextWrapWord
-		body.Add(notes)
+		scroll := container.NewVScroll(notes)
+		scroll.SetMinSize(fyne.NewSize(520, min(notes.MinSize().Height, 320)))
+		body.Add(scroll)
 	}
 	if latest.URL != "" {
 		if u, err := parseURL(latest.URL); err == nil {
