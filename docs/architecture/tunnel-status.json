@@ -1,0 +1,59 @@
+{
+  "type": "state-machine",
+  "eyebrow": "STP TUNNEL · ผลลัพธ์",
+  "title": "สถานะของแต่ละ tunnel ในตาราง",
+  "initial": "stopped",
+  "states": [
+    {
+      "id": "stopped",
+      "name": "หยุดอยู่",
+      "enum": "STOPPED"
+    },
+    {
+      "id": "running",
+      "name": "ใช้งานได้",
+      "enum": "RUNNING"
+    },
+    {
+      "id": "error",
+      "name": "มีปัญหา",
+      "enum": "ERROR"
+    }
+  ],
+  "transitions": [
+    [
+      "stopped",
+      "running",
+      "Start สำเร็จ",
+      {
+        "tone": "success"
+      }
+    ],
+    [
+      "stopped",
+      "error",
+      "login / port ไม่ผ่าน",
+      {
+        "tone": "error"
+      }
+    ],
+    [
+      "running",
+      "error",
+      "SSH หลุด",
+      {
+        "tone": "error"
+      }
+    ],
+    [
+      "running",
+      "stopped",
+      "Stop / Quit"
+    ],
+    [
+      "error",
+      "stopped",
+      "กด Start ใหม่"
+    ]
+  ]
+}

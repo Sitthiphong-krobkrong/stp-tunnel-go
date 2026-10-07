@@ -1,0 +1,91 @@
+{
+  "type": "flowchart",
+  "eyebrow": "STP TUNNEL · ภาพรวม",
+  "title": "STP Tunnel ทำอะไร — ตั้งค่าครั้งเดียว ใช้ได้ทั้งทีม",
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "text": "เปิดแอป"
+    },
+    {
+      "id": "has",
+      "kind": "decision",
+      "text": "มีไฟล์ setup?"
+    },
+    {
+      "id": "import",
+      "text": "Import · เลือก project"
+    },
+    {
+      "id": "run",
+      "text": "กด Start · ใส่รหัสครั้งแรก"
+    },
+    {
+      "id": "use",
+      "kind": "success",
+      "text": "ใช้ localhost:port ได้เลย"
+    },
+    {
+      "id": "export",
+      "text": "Export project · ส่งให้ทีม"
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "text": "จบ"
+    },
+    {
+      "id": "setup",
+      "kind": "plain",
+      "text": "New Project + Test connection + Add Tunnel",
+      "below": "has"
+    }
+  ],
+  "edges": [
+    [
+      "start",
+      "has"
+    ],
+    [
+      "has",
+      "import",
+      {
+        "label": "มี",
+        "tone": "success"
+      }
+    ],
+    [
+      "import",
+      "run"
+    ],
+    [
+      "run",
+      "use"
+    ],
+    [
+      "use",
+      "export"
+    ],
+    [
+      "export",
+      "end"
+    ],
+    [
+      "has",
+      "setup",
+      {
+        "label": "ไม่มี"
+      }
+    ],
+    [
+      "setup",
+      "run",
+      {
+        "label": "ตั้งค่าเอง",
+        "dashed": true
+      }
+    ]
+  ],
+  "per_row": 7
+}

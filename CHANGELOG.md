@@ -15,6 +15,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- ภาพประกอบใน README: ภาพรวมแอป, เกิดอะไรขึ้นตอนกด Start, สถานะของ tunnel (ไฟล์ต้นฉบับอยู่ใน [docs/architecture/](docs/architecture/))
+
 ### Changed
 
 - Export/Import setup เลือกได้ราย project — **Export** มีหน้าต่างให้ติ๊ก project ที่จะแชร์ (ค่าเริ่มต้นคือ project ที่เปิดอยู่ มี "Select all") และตั้งชื่อไฟล์ตาม project ให้ เช่น `stp-tunnel-eec-prod.json` เดิม export ทุก project ที่มีไปทีเดียว **Import** ถ้าในไฟล์มีหลาย project จะให้ติ๊กเลือกว่าจะเอาอันไหน พร้อมบอกว่าแต่ละอัน "new" / "already here, adds N new tunnel(s)" / "already here" และหลัง import จะสลับไปที่ project ที่เพิ่ง import ให้เลย

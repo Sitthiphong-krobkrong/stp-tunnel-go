@@ -55,26 +55,29 @@ A small desktop app for opening SSH port-forwards (tunnels) to internal servers 
   ปิดเครื่อง เปิดใหม่ = พิมพ์ใหม่ทั้งหมด        รายการยังอยู่ครบ กด Start ต่อได้เลย
 ```
 
+### ภาพรวม: ตั้งค่าครั้งเดียว ใช้ได้ทั้งทีม
+
+![STP Tunnel ทำอะไร](docs/architecture/app-overview.png)
+
+คนแรกในทีมสร้าง project (ข้อมูล bastion) กับรายการ tunnel แล้วกด **Test connection** ให้แน่ใจว่าต่อได้ จากนั้น **Export** ส่งไฟล์ให้เพื่อน เพื่อน **Import** แล้วกด Start ได้เลย ใส่แค่รหัสผ่านของตัวเองครั้งแรกครั้งเดียว
+
 ### เกิดอะไรขึ้นตอนกด Start
 
-```
-  กด Start
-     │
-     ▼
-  ถาม password  ────────▶ (ครั้งแรกของรอบเท่านั้น จำไว้ในหน่วยความจำ)
-     │
-     ▼
-  ต่อ SSH ไปที่ bastion
-     │
-     ▼
-  เปิด port บนเครื่องคุณ (localhost:8080)
-     │
-     ▼
-  ทุก connection ที่เข้า port นี้ → ส่งผ่านท่อ SSH → ออกที่ปลายทาง
-     │
-     ▼
-  สถานะเปลี่ยนเป็น RUNNING  ◀────  กด Stop เมื่อไหร่ก็ปิดท่อทันที
-```
+![เกิดอะไรขึ้นเมื่อกด Start](docs/architecture/tunnel-start-swimlane.png)
+
+- แอปหาวิธี login เองตามลำดับ: identity file ที่ตั้งไว้ → รหัสที่จำไว้ใน Keychain → ถ้าไม่มีเลยค่อยถาม (ติ๊ก **Remember** ไว้ครั้งหน้าไม่ต้องกรอกอีก)
+- ต่อ SSH ไปที่ bastion ก่อน ผ่านแล้วจึงเปิด port บนเครื่องคุณ (`localhost:8080`)
+- ทุก connection ที่เข้า port นี้จะถูกส่งผ่านท่อ SSH ไปออกที่ target host:port
+
+### ผลลัพธ์: สถานะที่เห็นในตาราง
+
+![สถานะของแต่ละ tunnel](docs/architecture/tunnel-status.png)
+
+| สถานะ | ความหมาย | ทำอะไรต่อ |
+|---|---|---|
+| `RUNNING` | ใช้งานได้ ต่อ `localhost:port` ได้เลย คอลัมน์ Latency บอกความเร็วถึง bastion | กด Stop เมื่อเลิกใช้ |
+| `STOPPED` | ยังไม่ได้เปิด หรือปิดไปแล้ว | ติ๊กแล้วกด Start |
+| `ERROR` | login ไม่ผ่าน, port บนเครื่องถูกใช้อยู่ หรือ SSH หลุดระหว่างใช้ — สาเหตุอยู่ในช่อง LOG | แก้ตามที่ LOG บอก แล้วกด Start ใหม่ |
 
 **tunnel แต่ละอันมีท่อ SSH ของตัวเอง** — ตัวหนึ่งหลุดหรือถูกปิด ตัวอื่นไม่กระทบ
 

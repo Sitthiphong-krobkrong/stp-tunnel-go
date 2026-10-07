@@ -1,0 +1,149 @@
+{
+  "type": "swimlane",
+  "eyebrow": "STP TUNNEL · ทำงานยังไง",
+  "title": "เกิดอะไรขึ้นเมื่อกด Start",
+  "lanes": [
+    {
+      "id": "user",
+      "name": "ผู้ใช้",
+      "sub": "เครื่องตัวเอง"
+    },
+    {
+      "id": "app",
+      "name": "STP Tunnel",
+      "sub": "แอปบนเครื่อง"
+    },
+    {
+      "id": "keychain",
+      "name": "Keychain",
+      "sub": "macOS Keychain /\nCredential Manager"
+    },
+    {
+      "id": "bastion",
+      "name": "Bastion",
+      "sub": "SSH server\nของ project"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "s",
+      "lane": "user",
+      "kind": "start"
+    },
+    {
+      "id": "pick",
+      "lane": "user",
+      "text": "เลือก Project\nติ๊ก tunnel + Start"
+    },
+    {
+      "id": "auth",
+      "lane": "app",
+      "kind": "gateway",
+      "text": "มี key/รหัส?"
+    },
+    {
+      "id": "load",
+      "lane": "keychain",
+      "text": "อ่านรหัสที่จำไว้",
+      "col": 3
+    },
+    {
+      "id": "ask",
+      "lane": "user",
+      "text": "กรอกรหัสผ่าน",
+      "col": 4
+    },
+    {
+      "id": "save",
+      "lane": "keychain",
+      "text": "เก็บรหัส\n(ถ้าติ๊ก Remember)",
+      "col": 5
+    },
+    {
+      "id": "login",
+      "lane": "bastion",
+      "text": "ตรวจ host key\n+ login",
+      "col": 6
+    },
+    {
+      "id": "listen",
+      "lane": "app",
+      "text": "เปิด localhost:port\nสถานะ RUNNING",
+      "col": 7
+    },
+    {
+      "id": "fwd",
+      "lane": "bastion",
+      "text": "ส่งต่อไป\ntarget host:port",
+      "col": 8
+    },
+    {
+      "id": "use",
+      "lane": "user",
+      "text": "ต่อ DB / API ที่\nlocalhost:port",
+      "col": 9
+    },
+    {
+      "id": "e",
+      "lane": "user",
+      "kind": "end",
+      "col": 10
+    }
+  ],
+  "edges": [
+    [
+      "s",
+      "pick"
+    ],
+    [
+      "pick",
+      "auth"
+    ],
+    [
+      "auth",
+      "load",
+      {
+        "label": "มี"
+      }
+    ],
+    [
+      "auth",
+      "ask",
+      {
+        "label": "ไม่มี"
+      }
+    ],
+    [
+      "ask",
+      "save"
+    ],
+    [
+      "load",
+      "login"
+    ],
+    [
+      "save",
+      "login"
+    ],
+    [
+      "login",
+      "listen",
+      {
+        "label": "ผ่าน",
+        "tone": "success"
+      }
+    ],
+    [
+      "listen",
+      "fwd"
+    ],
+    [
+      "fwd",
+      "use"
+    ],
+    [
+      "use",
+      "e"
+    ]
+  ]
+}

@@ -1,6 +1,6 @@
 # STP Tunnel — โครงสร้างโค้ด
 
-สองไดอะแกรมนี้อธิบายว่าไฟล์ Go แต่ละไฟล์ทำหน้าที่อะไร และประกอบกันยังไงตอนรันจริง เริ่มจาก [main.go](../../main.go) เป็นจุดเริ่มต้น
+ไดอะแกรม 1–2 อธิบายว่าไฟล์ Go แต่ละไฟล์ทำหน้าที่อะไร และประกอบกันยังไงตอนรันจริง เริ่มจาก [main.go](../../main.go) เป็นจุดเริ่มต้น
 
 ## 1. Component overview
 
@@ -30,3 +30,15 @@
 6. **ในอนาคต** (background, ไม่รู้ล่วงหน้าว่าเมื่อไหร่): ถ้า session หลุด goroutine ที่เฝ้า `client.Wait()` จะเรียก `onExit(tunnelID, err)` กลับมา main.go ต้องเรียก `fyne.Do(refreshRows)` เพื่อกลับ UI thread ก่อนอัปเดตตาราง
 
 จุดที่ควรระวังเวลาแก้โค้ดส่วนนี้: ถ้า Stop() แล้ว Start() tunnel เดิมซ้อนกันเร็วมาก ต้องเทียบว่า `*liveTunnel` instance ที่เก็บใน `r.running[t.ID]` ยังเป็นตัวเดิมไหมก่อนจะลบ/แจ้ง exit — ไม่งั้น goroutine เก่าที่เฝ้า session ที่ถูก Stop ไปแล้วอาจไปรายงานว่า session **ใหม่** หลุดแทน (ดู comment ใน [tunnel.go](../../tunnel.go) ตรง `Start()`)
+
+## 3. ภาพสำหรับผู้ใช้ (ใช้ใน [README.md](../../README.md))
+
+สามภาพนี้เล่าว่าแอปทำอะไร ทำยังไง และผลลัพธ์เป็นแบบไหน สำหรับคนที่ไม่ได้อ่านโค้ด สร้างด้วย skill `dia-render` จาก spec JSON
+
+| ภาพ | แบบ | เล่าเรื่องอะไร |
+|---|---|---|
+| [app-overview.png](app-overview.png) | flowchart | ทั้งแอป: Import หรือตั้งค่าเอง → Start → ใช้งาน → Export ให้ทีม |
+| [tunnel-start-swimlane.png](tunnel-start-swimlane.png) | swimlane | กด Start แล้วผู้ใช้ / แอป / Keychain / Bastion ทำอะไรบ้าง |
+| [tunnel-status.png](tunnel-status.png) | state machine | สถานะ STOPPED / RUNNING / ERROR และอะไรทำให้เปลี่ยน |
+
+แต่ละภาพมี 4 ไฟล์ชื่อเดียวกัน: `.json` (ต้นฉบับ — แก้ที่นี่แล้ว render ใหม่), `.drawio.svg` (เปิดแก้ใน draw.io ได้), `.png`, `.pdf`
