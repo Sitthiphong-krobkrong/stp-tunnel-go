@@ -46,3 +46,46 @@ func TestIsNewer(t *testing.T) {
 		}
 	}
 }
+
+func TestMergeRenamesClashingProjectNames(t *testing.T) {
+	existing := &Store{Projects: []Project{{ID: "p1", Name: "EEC"}}}
+	incoming := &Store{Projects: []Project{{ID: "p2", Name: "EEC"}}}
+
+	existing.Merge(incoming)
+	if got := existing.Projects[1].Name; got != "EEC (2)" {
+		t.Fatalf("imported project named %q, want %q", got, "EEC (2)")
+	}
+}
+
+func TestSubsetKeepsOnlyChosenProjects(t *testing.T) {
+	s := &Store{
+		Projects: []Project{{ID: "p1"}, {ID: "p2"}, {ID: "p3"}},
+		Tunnels: []TunnelConfig{
+			{ID: "t1", ProjectID: "p1"},
+			{ID: "t2", ProjectID: "p2"},
+			{ID: "t3", ProjectID: "p3"},
+			{ID: "t4", ProjectID: "p3"},
+		},
+	}
+	sub := s.Subset([]string{"p3", "p1"})
+	if len(sub.Projects) != 2 || sub.Projects[0].ID != "p1" || sub.Projects[1].ID != "p3" {
+		t.Fatalf("got projects %+v", sub.Projects)
+	}
+	if len(sub.Tunnels) != 3 {
+		t.Fatalf("got %d tunnels, want 3", len(sub.Tunnels))
+	}
+}
+
+func TestFileSlug(t *testing.T) {
+	cases := map[string]string{
+		"EEC Prod":    "eec-prod",
+		"  a/b\\c  ":  "a-b-c",
+		"ระบบ UAT #2": "ระบบ-uat-2",
+		"!!!":         "project",
+	}
+	for in, want := range cases {
+		if got := fileSlug(in); got != want {
+			t.Errorf("fileSlug(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

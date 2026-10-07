@@ -15,6 +15,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Export/Import setup เลือกได้ราย project — **Export** มีหน้าต่างให้ติ๊ก project ที่จะแชร์ (ค่าเริ่มต้นคือ project ที่เปิดอยู่ มี "Select all") และตั้งชื่อไฟล์ตาม project ให้ เช่น `stp-tunnel-eec-prod.json` เดิม export ทุก project ที่มีไปทีเดียว **Import** ถ้าในไฟล์มีหลาย project จะให้ติ๊กเลือกว่าจะเอาอันไหน พร้อมบอกว่าแต่ละอัน "new" / "already here, adds N new tunnel(s)" / "already here" และหลัง import จะสลับไปที่ project ที่เพิ่ง import ให้เลย
+
+### Fixed
+
+- Import project ที่ชื่อซ้ำกับ project ที่มีอยู่แล้ว (คนละ ID) เดิมทำให้ dropdown Project มีชื่อซ้ำสองอัน เลือกแล้วไปโดนอีกอันแทน ตอนนี้ตั้งชื่อใหม่เป็น `ชื่อ (2)` ให้อัตโนมัติ
+
 ## [1.1.0] - 2026-09-18
 
 ### Added

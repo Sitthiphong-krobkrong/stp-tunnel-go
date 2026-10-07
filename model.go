@@ -157,10 +157,19 @@ func (s *Store) Merge(incoming *Store) (projectsAdded, tunnelsAdded int) {
 		haveTunnel[t.ID] = true
 	}
 
+	haveName := map[string]bool{}
+	for _, p := range s.Projects {
+		haveName[p.Name] = true
+	}
+
 	for _, p := range incoming.Projects {
 		if haveProject[p.ID] {
 			continue
 		}
+		// The project picker selects by name, so a teammate's unrelated
+		// project that happens to share a name must not shadow ours.
+		p.Name = uniqueName(p.Name, haveName)
+		haveName[p.Name] = true
 		s.Projects = append(s.Projects, p)
 		haveProject[p.ID] = true
 		projectsAdded++
@@ -176,4 +185,54 @@ func (s *Store) Merge(incoming *Store) (projectsAdded, tunnelsAdded int) {
 	}
 
 	return projectsAdded, tunnelsAdded
+}
+
+// Subset returns just the given projects (in this store's order) and their
+// tunnels — what gets written when only some projects are exported, or kept
+// when only some projects of a file are imported.
+func (s *Store) Subset(projectIDs []string) *Store {
+	want := map[string]bool{}
+	for _, id := range projectIDs {
+		want[id] = true
+	}
+	out := &Store{Projects: []Project{}, Tunnels: []TunnelConfig{}}
+	for _, p := range s.Projects {
+		if want[p.ID] {
+			out.Projects = append(out.Projects, p)
+		}
+	}
+	for _, t := range s.Tunnels {
+		if want[t.ProjectID] {
+			out.Tunnels = append(out.Tunnels, t)
+		}
+	}
+	return out
+}
+
+// NewTunnelsFor counts the tunnels of incoming project projectID that this
+// store doesn't have yet — i.e. what importing that project would add.
+func (s *Store) NewTunnelsFor(incoming *Store, projectID string) int {
+	have := map[string]bool{}
+	for _, t := range s.Tunnels {
+		have[t.ID] = true
+	}
+	n := 0
+	for _, t := range incoming.Tunnels {
+		if t.ProjectID == projectID && !have[t.ID] {
+			n++
+		}
+	}
+	return n
+}
+
+func uniqueName(name string, taken map[string]bool) string {
+	if !taken[name] {
+		return name
+	}
+	for i := 2; ; i++ {
+		candidate := fmt.Sprintf("%s (%d)", name, i)
+		if !taken[candidate] {
+			return candidate
+		}
+	}
 }

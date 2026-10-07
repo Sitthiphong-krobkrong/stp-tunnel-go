@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
+	"unicode"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -32,14 +34,37 @@ func (a *App) buildMainMenu() *fyne.MainMenu {
 
 // ---------- share a setup between teammates ----------
 
+// doExportConfig asks which projects to share (the current one is ticked by
+// default) — usually a teammate only needs the one project they're joining,
+// not every bastion you happen to have.
 func (a *App) doExportConfig() {
+	if len(a.store.Projects) == 0 {
+		dialog.ShowInformation("Nothing to Export", "Create a project first.", a.win)
+		return
+	}
+
+	choices := make([]projectChoice, len(a.store.Projects))
+	for i, p := range a.store.Projects {
+		choices[i] = projectChoice{
+			Project: p,
+			Note:    fmt.Sprintf("%d tunnel(s)", len(a.store.TunnelsForProject(p.ID))),
+			Checked: p.ID == a.projectID || len(a.store.Projects) == 1,
+		}
+	}
+
+	a.pickProjects("Export Projects", "Export...", choices, func(ids []string) {
+		a.saveExport(a.store.Subset(ids))
+	})
+}
+
+func (a *App) saveExport(out *Store) {
 	save := dialog.NewFileSave(func(w fyne.URIWriteCloser, err error) {
 		if err != nil || w == nil {
 			return
 		}
 		defer w.Close()
 
-		data, err := json.MarshalIndent(a.store, "", "  ")
+		data, err := json.MarshalIndent(out, "", "  ")
 		if err != nil {
 			dialog.ShowError(err, a.win)
 			return
@@ -51,13 +76,20 @@ func (a *App) doExportConfig() {
 
 		dialog.ShowInformation("Exported",
 			fmt.Sprintf("Saved %d project(s) and %d tunnel(s).\nPasswords are never included.",
-				len(a.store.Projects), len(a.store.Tunnels)), a.win)
+				len(out.Projects), len(out.Tunnels)), a.win)
 	}, a.win)
 
-	save.SetFileName("stp-tunnel-setup.json")
+	name := "stp-tunnel-setup.json"
+	if len(out.Projects) == 1 {
+		name = "stp-tunnel-" + fileSlug(out.Projects[0].Name) + ".json"
+	}
+	save.SetFileName(name)
 	save.Show()
 }
 
+// doImportConfig reads a setup file and, when it holds more than one
+// project, lets the user pick which ones to bring in. Projects that are
+// already fully here are listed but can't be ticked.
 func (a *App) doImportConfig() {
 	open := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 		if err != nil || r == nil {
@@ -72,38 +104,153 @@ func (a *App) doImportConfig() {
 		}
 
 		var incoming Store
-		if err := json.Unmarshal(data, &incoming); err != nil {
+		if err := json.Unmarshal(data, &incoming); err != nil || len(incoming.Projects) == 0 {
+			if err == nil {
+				err = fmt.Errorf("it contains no projects")
+			}
 			dialog.ShowError(fmt.Errorf("this doesn't look like an exported setup: %w", err), a.win)
 			return
 		}
 
-		projects, tunnels := a.store.Merge(&incoming)
-		if projects == 0 && tunnels == 0 {
+		var choices []projectChoice
+		for _, p := range incoming.Projects {
+			_, exists := a.store.FindProject(p.ID)
+			newTunnels := a.store.NewTunnelsFor(&incoming, p.ID)
+			c := projectChoice{Project: p}
+			switch {
+			case !exists:
+				c.Note = fmt.Sprintf("new, %d tunnel(s)", newTunnels)
+				c.Checked = true
+			case newTunnels > 0:
+				c.Note = fmt.Sprintf("already here, adds %d new tunnel(s)", newTunnels)
+				c.Checked = true
+			default:
+				c.Note = "already here"
+				c.Disabled = true
+			}
+			choices = append(choices, c)
+		}
+
+		pickable := 0
+		var only []string
+		for _, c := range choices {
+			if !c.Disabled {
+				pickable++
+				only = append(only, c.Project.ID)
+			}
+		}
+		switch pickable {
+		case 0:
 			dialog.ShowInformation("Nothing New", "Everything in that file is already here.", a.win)
-			return
+		case 1:
+			a.applyImport(incoming.Subset(only)) // nothing to choose between
+		default:
+			a.pickProjects("Import Projects", "Import", choices, func(ids []string) {
+				a.applyImport(incoming.Subset(ids))
+			})
 		}
-
-		if err := a.store.Save(); err != nil {
-			dialog.ShowError(err, a.win)
-			return
-		}
-
-		if a.projectID == "" && len(a.store.Projects) > 0 {
-			a.projectID = a.store.Projects[0].ID
-		}
-		a.projectSelect.SetOptions(projectNames(a.store))
-		if p, ok := a.currentProject(); ok {
-			a.projectSelect.SetSelected(p.Name)
-		}
-		a.refreshRows()
-		a.refreshKeyLabel()
-
-		dialog.ShowInformation("Imported",
-			fmt.Sprintf("Added %d project(s) and %d tunnel(s).\nPress Start and enter your own password to use them.",
-				projects, tunnels), a.win)
 	}, a.win)
 
 	open.Show()
+}
+
+func (a *App) applyImport(incoming *Store) {
+	projects, tunnels := a.store.Merge(incoming)
+	if projects == 0 && tunnels == 0 {
+		dialog.ShowInformation("Nothing New", "Everything in that file is already here.", a.win)
+		return
+	}
+
+	if err := a.store.Save(); err != nil {
+		dialog.ShowError(err, a.win)
+		return
+	}
+
+	// Jump to the first imported project so its tunnels are right there.
+	a.projectID = incoming.Projects[0].ID
+	a.selected = map[string]bool{}
+	a.projectSelect.SetOptions(projectNames(a.store))
+	if p, ok := a.currentProject(); ok {
+		a.projectSelect.SetSelected(p.Name)
+	}
+	a.refreshRows()
+	a.refreshKeyLabel()
+
+	dialog.ShowInformation("Imported",
+		fmt.Sprintf("Added %d project(s) and %d tunnel(s).\nPress Start and enter your own password to use them.",
+			projects, tunnels), a.win)
+}
+
+// projectChoice is one row of the export/import project picker.
+type projectChoice struct {
+	Project  Project
+	Note     string // shown after the name, e.g. "3 tunnel(s)"
+	Checked  bool
+	Disabled bool
+}
+
+// pickProjects shows a checklist of projects with a "Select all" toggle and
+// calls fn with the ticked project IDs. Confirming with nothing ticked is
+// refused rather than producing an empty file / no-op import.
+func (a *App) pickProjects(title, confirm string, choices []projectChoice, fn func(ids []string)) {
+	checks := make([]*widget.Check, len(choices))
+	rows := container.NewVBox()
+	for i, c := range choices {
+		checks[i] = widget.NewCheck(fmt.Sprintf("%s  —  %s", c.Project.Name, c.Note), nil)
+		checks[i].SetChecked(c.Checked)
+		if c.Disabled {
+			checks[i].Disable()
+		}
+		rows.Add(checks[i])
+	}
+
+	selectAll := widget.NewCheck("Select all", func(on bool) {
+		for _, ch := range checks {
+			if !ch.Disabled() {
+				ch.SetChecked(on)
+			}
+		}
+	})
+
+	scroll := container.NewVScroll(rows)
+	scroll.SetMinSize(fyne.NewSize(420, min(float32(len(choices))*40, 280)))
+	content := container.NewBorder(
+		container.NewVBox(selectAll, widget.NewSeparator()), nil, nil, nil, scroll)
+
+	dialog.ShowCustomConfirm(title, confirm, "Cancel", content, func(ok bool) {
+		if !ok {
+			return
+		}
+		var ids []string
+		for i, ch := range checks {
+			if ch.Checked && !ch.Disabled() {
+				ids = append(ids, choices[i].Project.ID)
+			}
+		}
+		if len(ids) == 0 {
+			dialog.ShowInformation("Nothing Selected", "Tick at least one project.", a.win)
+			return
+		}
+		fn(ids)
+	}, a.win)
+}
+
+// fileSlug turns a project name into something safe for a file name.
+func fileSlug(name string) string {
+	var b strings.Builder
+	for _, r := range strings.ToLower(strings.TrimSpace(name)) {
+		switch {
+		case unicode.IsLetter(r) || unicode.IsDigit(r) || unicode.IsMark(r):
+			b.WriteRune(r)
+		case b.Len() > 0 && !strings.HasSuffix(b.String(), "-"):
+			b.WriteByte('-')
+		}
+	}
+	slug := strings.TrimSuffix(b.String(), "-")
+	if slug == "" {
+		return "project"
+	}
+	return slug
 }
 
 // ---------- support ----------
